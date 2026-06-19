@@ -153,6 +153,8 @@ def _score_main(obs):
                     s += 500          # Hariyama is our ONLY answer to the wall — build it fast
                 elif _is_main_attacker(pk.id):
                     s += W["energy_need"]
+                    if len(pk.energies) >= 2:
+                        s -= 1500          # already attack-ready -> spread energy instead
             card = _get(obs, AreaType.HAND, o.index, me)
             if card is not None and card.id == HERO_CAPE:
                 s = 7000 + (200 if (pk and pk.id == MEGA_LUCARIO) else 0)
