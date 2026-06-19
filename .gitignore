@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.tar.gz
+data/*.pdf
+data/Card_ID*
+refs/
+sdk/cg/*.so
+sdk/cg/*.dll
+submission*/cg/
