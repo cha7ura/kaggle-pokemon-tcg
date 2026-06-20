@@ -14,7 +14,13 @@ import shutil
 import subprocess
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AUTO = os.path.join(REPO, "autoresearch")          # candidate/champion are named relative to here
 LOG = os.path.join(REPO, "autoresearch", "log", "experiments.md")
+
+
+def _host(p):
+    """Resolve a name (relative to autoresearch/) to a host path; absolute paths pass through."""
+    return os.path.join(AUTO, p)
 
 
 def run_eval(candidate, champion, games, deck="decks/lucario_meta.csv") -> dict:
@@ -42,14 +48,15 @@ def evolve(candidate, champion, log_path, note, games=600, lb_min=0.48, runner=r
     with open(log_path, "a") as f:
         f.write(line)
     if kept:
-        shutil.copyfile(candidate, champion)
+        shutil.copyfile(_host(candidate), _host(champion))
     return kept, result
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("candidate")
-    ap.add_argument("--champion", default="autoresearch/champion_lucario.py")
+    ap.add_argument("--champion", default="champion_lucario.py",
+                    help="frozen benchmark, named relative to autoresearch/")
     ap.add_argument("--games", type=int, default=600)
     ap.add_argument("--lb", type=float, default=0.48)
     ap.add_argument("--note", default="evolve")
