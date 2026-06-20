@@ -18,7 +18,9 @@ game. That assertion is the test — no mocks.
 | `cfr/mccfr.py` | external-sampling MCCFR | [wiki/10](../wiki/10-cfr-and-nash.md) | done |
 | `rnad/rnad.py` | tabular R-NaD (last-iterate Nash, validated on Kuhn) | [wiki/12](../wiki/12-deepnash-rnad.md) | done |
 | `cg/` | ISMCTS + determinization on the real `cg` sim | [wiki/17](../wiki/17-imperfect-info-on-tcg.md) | planned (Docker, Task 3) |
-| `rnad/` neural (`net.py`/`train.py`/`export.py`) → `agent_net.py` | R-NaD net → NumPy forward pass | [wiki/12](../wiki/12-deepnash-rnad.md) | planned (GPU, Task 6) |
+| `rnad/numpy_net.py` | pure-NumPy forward pass (the ship mechanism) | [wiki/12](../wiki/12-deepnash-rnad.md), [wiki/17](../wiki/17-imperfect-info-on-tcg.md) | done |
+| `colab/kuhn_pipeline.py` | GPU-train → `weights.npz` → NumPy round-trip (proven on T4, diff 6e-8) | [wiki/12](../wiki/12-deepnash-rnad.md) | done |
+| cg-scale R-NaD self-play training → `agent_net.py` | the real net on the cg engine | [wiki/12](../wiki/12-deepnash-rnad.md) | deferred (needs cg engine on GPU + feature encoder) |
 
 Run the working piece:
 
