@@ -60,3 +60,5 @@ ALAKAZAM DECK TUNING: public 5th deck is messy (3-of cores, 4 Battle Cage, Lucky
 
 === v9 ALAKAZAM = 914.8 (BREAKTHROUGH, ladder) ===
 Archetype switch confirmed: v5 Lucario=664, v8 LB950 Lucario=748.8, v9 ALAKAZAM=914.8 (+250 over v5, +166 over best Lucario). Reading top-team replays -> switch to the meta archetype = the single biggest gain of the project. Validates data-driven meta-reading over agent micro-optimization. Next: v10 (Alakazam + #1 TrustHub deck, tighter), GBM imitator of top Alakazam play (toward ~1300 top).
+
+GBM IMITATOR (tools/build_gbm.py, agent_gbm.py): gradient-boosted tree on 20,103 top-agent decisions (190k option-rows, row-acc 0.928). Head-to-head vs public Alakazam (same deck) = 0.12 (12-88), 1.0 games/s (too slow). FAILED. Confirms: per-move imitation (NN AND GBM) doesn't reproduce play quality — nuance is sequential/card-specific, hand-rules encode it directly; rule-based beats every learned imitator. Pure imitation exhausted. Pivot to the 4 EXCEED approaches (counter-meta, value-net+ISMCTS, deck innovation, self-play RL) — none are pure imitation. Best agent remains v9 Alakazam (914.8) / v10 (#1 deck).
