@@ -40,3 +40,4 @@ Goal: train a net to beat the heuristic, ship as NumPy weights (R-NaD/DeepNash p
 - RL fine-tune (PG + prize-diff shaping, vs heuristic, from CE warm-start): NO climb, wr_vs_heuristic ~0.1-0.3, reward ~-0.9 (ig3kg72g). High-variance PG vs a strong opponent = no usable gradient.
 - Diagnosis matches PTCG-Bench (self-improvement unstable) + prior log finding (search/learning lost to heuristic). To go further would need true R-NaD self-play at DeepNash scale + value head + league — beyond one notebook.
 VERDICT: no neural challenger cleared the gate -> nothing shipped (challenger framework worked as designed). Competitive lever stays heuristic + evolve.py.
+STATUS-RETREAT (evolve cycle 2): retreat when active asleep/paralyzed + bench attacker exists. mirror(600)=0.50 (lb=0.4601). REJECT — below 0.48 floor and below v5 baseline 0.4967; status conditions rare in the mirror, retreat wastes energy. Discarded.
