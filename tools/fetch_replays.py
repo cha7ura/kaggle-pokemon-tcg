@@ -28,53 +28,66 @@ def list_episodes(submission_id):
     return json.loads(urllib.request.urlopen(req, timeout=40).read().decode())
 
 
+REPLAY_DEFAULT = "https://www.kaggle.com/competitions/episodes/{ep}/replay.json"
+
+
 def download_replay(ep_id, cookie, url_tmpl):
     url = url_tmpl.replace("{ep}", str(ep_id))
     req = urllib.request.Request(url, headers={"cookie": cookie, "User-Agent": "Mozilla/5.0",
-                                               "Accept": "application/json"})
+                                               "Accept": "application/json",
+                                               "Accept-Encoding": "identity"})  # avoid brotli
     return urllib.request.urlopen(req, timeout=60).read()
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--submissions", type=int, nargs="*", default=[])
+    ap.add_argument("--submissions", type=int, nargs="*", default=[53802029])
+    ap.add_argument("--max-subs", type=int, default=40, help="how many submissions to enumerate (BFS)")
+    ap.add_argument("--max-dl", type=int, default=150, help="cap new replay downloads")
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     have = {os.path.basename(f).split(".")[0] for f in glob.glob(f"{OUT}/*.json")}
-    cookie = os.environ.get("KAGGLE_COOKIE"); url_tmpl = os.environ.get("REPLAY_URL")
+    cookie = os.environ.get("KAGGLE_COOKIE"); url_tmpl = os.environ.get("REPLAY_URL") or REPLAY_DEFAULT
 
-    # 1) enumerate episode ids (works with API key) — also harvests opponent submissionIds to expand
-    ep_ids, subs = set(), set(args.submissions)
-    for s in args.submissions:
-        d = list_episodes(s)
+    # 1) BFS-enumerate episodes across discovered top-tier submissions (API key)
+    ep_ids, seen_subs, queue = set(), set(), list(args.submissions)
+    while queue and len(seen_subs) < args.max_subs:
+        s = queue.pop(0)
+        if s in seen_subs:
+            continue
+        seen_subs.add(s)
+        try:
+            d = list_episodes(s)
+        except Exception as e:
+            print(f"  list {s}: {repr(e)[:60]}"); continue
         for e in d.get("episodes", []):
             ep_ids.add(e["id"])
             for a in e.get("agents", []):
-                if a.get("submissionId"): subs.add(a["submissionId"])
-    print(f"enumerated {len(ep_ids)} episodes from {len(args.submissions)} submissions "
-          f"(+{len(subs)-len(args.submissions)} opponent submissions discovered)")
+                sid = a.get("submissionId")
+                if sid and sid not in seen_subs and sid not in queue:
+                    queue.append(sid)
+    print(f"enumerated {len(ep_ids)} episodes across {len(seen_subs)} top-tier submissions")
 
-    if not cookie or not url_tmpl:
-        print("\nSet KAGGLE_COOKIE + REPLAY_URL (with {ep}) to download. Enumeration-only for now.")
-        print("episode ids:", sorted(ep_ids)[:20], "..." if len(ep_ids) > 20 else "")
+    if not cookie:
+        print("\nSet KAGGLE_COOKIE to download. Enumeration-only.")
         return
-
     # 2) download replays via browser cookie
     got = 0
     for ep in sorted(ep_ids):
-        if str(ep) in have:
+        if str(ep) in have or got >= args.max_dl:
             continue
         try:
             data = download_replay(ep, cookie, url_tmpl)
             if len(data) > 10000:
                 open(f"{OUT}/{ep}.json", "wb").write(data); got += 1
-                print(f"  saved {ep}.json ({len(data)//1024}KB)")
+                if got % 10 == 0:
+                    print(f"  ...{got} downloaded")
             else:
-                print(f"  {ep}: tiny response ({len(data)}b) — cookie expired or wrong URL?"); break
-            time.sleep(1.0)
+                print(f"  {ep}: tiny ({len(data)}b) — cookie expired?"); break
+            time.sleep(0.7)
         except urllib.error.HTTPError as e:
             print(f"  {ep}: HTTP {e.code} (cookie expired?)"); break
-    print(f"downloaded {got} new replays -> {OUT}")
+    print(f"downloaded {got} new replays -> {OUT} (total now {len(have)+got})")
 
 
 if __name__ == "__main__":
