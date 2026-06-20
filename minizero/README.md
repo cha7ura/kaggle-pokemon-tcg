@@ -15,9 +15,10 @@ game. That assertion is the test — no mocks.
 | `cfr/cfr.py` | vanilla CFR + regret matching (returns the **average** strategy) | [wiki/10](../wiki/10-cfr-and-nash.md), [cfr2013] | done |
 | `cfr/exploit.py` | exact best-response exploitability (brute-force pure strategies) | [wiki/10](../wiki/10-cfr-and-nash.md), [ismcts2012] strategy-fusion note | done |
 | `cfr/run.py` | watch exploitability → 0 | — | done |
-| `cfr/mccfr.py` | external-sampling MCCFR | [wiki/10](../wiki/10-cfr-and-nash.md) | planned (Task 2) |
+| `cfr/mccfr.py` | external-sampling MCCFR | [wiki/10](../wiki/10-cfr-and-nash.md) | done |
+| `rnad/rnad.py` | tabular R-NaD (last-iterate Nash, validated on Kuhn) | [wiki/12](../wiki/12-deepnash-rnad.md) | done |
 | `cg/` | ISMCTS + determinization on the real `cg` sim | [wiki/17](../wiki/17-imperfect-info-on-tcg.md) | planned (Docker, Task 3) |
-| `rnad/` | tabular R-NaD on Leduc → neural R-NaD | [wiki/12](../wiki/12-deepnash-rnad.md) | planned (Task 4/6) |
+| `rnad/` neural (`net.py`/`train.py`/`export.py`) → `agent_net.py` | R-NaD net → NumPy forward pass | [wiki/12](../wiki/12-deepnash-rnad.md) | planned (GPU, Task 6) |
 
 Run the working piece:
 
