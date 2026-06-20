@@ -50,19 +50,26 @@ def kuhn_nash(iters=30000):
 
 
 # --- 2/3. train torch net to the Nash target, export, verify numpy round-trip ---
-def main():
+def main(use_wandb=False):
     import torch, torch.nn as nn
     dev = "cuda" if torch.cuda.is_available() else "cpu"
+    cfg = dict(game="kuhn", lr=0.01, hidden=16, steps=3000, target="cfr_nash")
+    run = None
+    if use_wandb:
+        import wandb
+        run = wandb.init(project="ptcg-rnad", name="kuhn-pipeline", config=cfg)
     nash = kuhn_nash(); keys = sorted(nash)
     X = torch.eye(len(keys), device=dev)
     Y = torch.tensor(np.stack([nash[k] for k in keys]), dtype=torch.float32, device=dev)
 
-    net = nn.Sequential(nn.Linear(len(keys), 16), nn.ReLU(), nn.Linear(16, 2)).to(dev)
-    opt = torch.optim.Adam(net.parameters(), lr=0.01)
-    for _ in range(3000):
+    net = nn.Sequential(nn.Linear(len(keys), cfg["hidden"]), nn.ReLU(), nn.Linear(cfg["hidden"], 2)).to(dev)
+    opt = torch.optim.Adam(net.parameters(), lr=cfg["lr"])
+    for step in range(cfg["steps"]):
         opt.zero_grad()
         loss = -(Y * torch.log_softmax(net(X), 1)).sum(1).mean()
         loss.backward(); opt.step()
+        if run and step % 100 == 0:
+            run.log({"step": step, "ce_loss": loss.item()})
 
     W = {f"fc{i//2+1}.{p}": net[i].__getattr__(p).detach().cpu().numpy()
          for i in (0, 2) for p in ("weight", "bias")}
@@ -76,6 +83,11 @@ def main():
     rt = np.abs(np_p - tp).max()
     print(f"device={dev}  round-trip max|torch-numpy|={rt:.2e}  net-vs-Nash={np.abs(np_p - Y.cpu().numpy()).max():.3f}")
     assert rt < 1e-5, "round-trip mismatch"
+    if run:
+        import wandb
+        run.log({"roundtrip_max_diff": float(rt)})
+        art = wandb.Artifact("kuhn-weights", type="model", metadata={"roundtrip": float(rt)})
+        art.add_file("weights.npz"); run.log_artifact(art); run.finish()
     print("OK: GPU-train -> weights.npz -> numpy forward verified")
 
 
