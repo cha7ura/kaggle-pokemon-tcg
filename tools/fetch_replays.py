@@ -44,36 +44,49 @@ def main():
     ap.add_argument("--submissions", type=int, nargs="*", default=[53802029])
     ap.add_argument("--max-subs", type=int, default=40, help="how many submissions to enumerate (BFS)")
     ap.add_argument("--max-dl", type=int, default=150, help="cap new replay downloads")
+    ap.add_argument("--min-score", type=float, default=0, help="only games where the weaker agent >= this Elo")
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     have = {os.path.basename(f).split(".")[0] for f in glob.glob(f"{OUT}/*.json")}
     cookie = os.environ.get("KAGGLE_COOKIE"); url_tmpl = os.environ.get("REPLAY_URL") or REPLAY_DEFAULT
 
-    # 1) BFS-enumerate episodes across discovered top-tier submissions (API key)
-    ep_ids, seen_subs, queue = set(), set(), list(args.submissions)
+    # 1) BFS-enumerate episodes; record each episode's MIN agent score (the weaker side)
+    ep_score, seen_subs, queue = {}, set(), list(args.submissions)
     while queue and len(seen_subs) < args.max_subs:
         s = queue.pop(0)
         if s in seen_subs:
             continue
         seen_subs.add(s)
-        try:
-            d = list_episodes(s)
-        except Exception as e:
-            print(f"  list {s}: {repr(e)[:60]}"); continue
+        for attempt in range(4):
+            try:
+                d = list_episodes(s); break
+            except Exception as e:
+                if "429" in str(e):
+                    time.sleep(5 * (attempt + 1)); continue
+                d = {"episodes": []}; break
         for e in d.get("episodes", []):
-            ep_ids.add(e["id"])
+            scs = [a.get("updatedScore", 0) for a in e.get("agents", [])]
+            ep_score[e["id"]] = min(scs) if scs else 0     # both sides must be strong -> use MIN
             for a in e.get("agents", []):
                 sid = a.get("submissionId")
                 if sid and sid not in seen_subs and sid not in queue:
                     queue.append(sid)
-    print(f"enumerated {len(ep_ids)} episodes across {len(seen_subs)} top-tier submissions")
+        time.sleep(0.3)
+    # rank episodes by score (genuine TOP games first)
+    ranked = sorted(ep_score.items(), key=lambda kv: -kv[1])
+    ranked = [ep for ep, sc in ranked if sc >= args.min_score]
+    print(f"enumerated {len(ep_score)} episodes / {len(seen_subs)} subs; "
+          f"{len(ranked)} with min-agent-score >= {args.min_score}")
+    if ep_score:
+        top = sorted(ep_score.values(), reverse=True)
+        print(f"  score range (weaker agent/game): top={top[0]:.0f} .. #{min(len(top),args.max_dl)}={top[min(len(top)-1,args.max_dl-1)]:.0f}")
 
     if not cookie:
         print("\nSet KAGGLE_COOKIE to download. Enumeration-only.")
         return
-    # 2) download replays via browser cookie
+    # 2) download the highest-scored episodes via browser cookie
     got = 0
-    for ep in sorted(ep_ids):
+    for ep in ranked:
         if str(ep) in have or got >= args.max_dl:
             continue
         try:
