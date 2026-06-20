@@ -8,3 +8,4 @@ refs/
 sdk/cg/*.so
 sdk/cg/*.dll
 submission*/cg/
+json/
