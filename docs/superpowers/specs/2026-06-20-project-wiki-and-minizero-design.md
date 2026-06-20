@@ -129,19 +129,25 @@ Progression matches "toy first": `rnad_tabular.py` on Leduc proves the R-NaD upd
 
 All training logic lives in versioned `minizero/rnad/*.py` so the GPU runner is interchangeable.
 The runner is a thin driver that installs torch, runs `minizero/rnad/train.py` on a GPU, and
-emits `weights.npz`. The specific runner is chosen at step 8, not now (steps 1–7 need no GPU).
-Candidate runners and what each needs:
+emits `weights.npz`. The specific runner is finalized at step 8, not now (steps 1–7 need no GPU).
 
-- **Kaggle kernels** (recommended): `kaggle` CLI already configured; I write kernel + metadata,
-  `push`, poll, pull `weights.npz` — fully headless from Bash. Needs GPU enabled on the account.
-- **HF Jobs**: programmatic cloud GPU via the installed `huggingface-skills`; needs an HF token.
-- **Colab + Drive**: manual run; I sync `weights.npz`/logs via the Google Drive MCP (one-time
-  auth). Run stays manual.
-- **NOT recommended**: driving Colab via Playwright/Chrome DevTools — brittle over multi-hour jobs.
+**Leading candidate: the official `googlecolab/colab-mcp` MCP server** (v1.0.2, Mar 2026; Claude
+Code supported). Rationale: this repo's authoritative state — git history, the compiled `cg` SDK,
+the `eval.py` Docker gate — stays local, while only the heavy R-NaD training bursts to a Colab GPU
+runtime. Colab is linux/amd64, the same platform `libcg.so` targets, so the cg self-play env runs
+there too. Claude drives notebook cells via MCP tools (create/edit/execute, pip install) and pulls
+`weights.npz` back to the local repo for gating. Caveats: bridges to a browser Colab session
+(one-time manual open/auth), early release, GPU provisioning not contractually specified.
 
-Whichever is chosen, a small `tools/run_training.*` driver wraps it. Parallel self-play via
-`n_workers` (multiprocessing) where the cg env is the bottleneck; torch handles GPU batch
-parallelism.
+Rejected alternatives:
+- **claude-colab (Claude Code *inside* an ephemeral Colab VM)** — inverts the architecture; would
+  shuffle the whole repo into a disposable box and lose local Docker/eval integration.
+- **Kaggle kernels / HF Jobs** — viable fully-headless fallbacks (kaggle CLI already configured;
+  HF token for HF Jobs) if colab-mcp proves too rough.
+- **Colab via Playwright/Chrome DevTools** — brittle over multi-hour jobs; not used.
+
+Parallel self-play via `n_workers` (multiprocessing) where the cg env is the bottleneck; torch
+handles GPU batch parallelism.
 
 ### Unit D — shippable net inference: `agent_net.py`
 
