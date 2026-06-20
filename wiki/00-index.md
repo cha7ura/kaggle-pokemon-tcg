@@ -51,6 +51,7 @@ index is the map; the pages are the territory.
 | 16 | [16 — PTCG-Bench](16-ptcg-bench.md) | LLM-agent benchmark on the TCG; self-evolution instability finding. |
 | 17 | [17 — Imperfect info on TCG](17-imperfect-info-on-tcg.md) | The bridge: what ports to our offline agent and what doesn't; why R-NaD-as-NumPy is the answer. |
 | — | [Perfect-info ancestors](perfect-info-ancestors.md) | Short: AlphaGo/AlphaZero/MuZero — MCTS assumes perfect info; this is why they don't port. |
+| 18 | [18 — Neural net experiments](18-net-experiments.md) | The honest record: BC + RL net runs on Colab/wandb; hit the imperfect-info wall, heuristic stays champion. |
 
 ---
 
