@@ -28,7 +28,7 @@ def grab(ep, outdir):
         print(f"  {ep}: tiny ({len(data)}b) — cookie expired?", flush=True)
         return None  # signal stop
     except Exception as e:
-        print(f"  {ep}: {repr(e)[:70]}", flush=True); return None
+        print(f"  {ep}: {repr(e)[:70]} (skip)", flush=True); return False  # transient -> skip, don't stop
 
 
 def enum_safe(sid):
@@ -53,8 +53,9 @@ def main():
                 ep = e["id"]
                 if str(ep) in h: continue
                 r = grab(ep, OUR_DIR)
-                if r is None: print("stop: cookie/err", flush=True); return
-                got += 1; h.add(str(ep)); time.sleep(SLEEP_DL)
+                if r is None: print("stop: cookie expired", flush=True); return
+                if r: got += 1; h.add(str(ep))
+                time.sleep(SLEEP_DL)
             time.sleep(0.4)
         # ---- LEADER games (BFS, Elo >= MIN_SCORE) ----
         ep_score, seen, q = {}, set(), list(TOP_SEEDS)
@@ -74,9 +75,10 @@ def main():
         for ep in ranked:
             if str(ep) in hl: continue
             r = grab(ep, LEAD_DIR)
-            if r is None: print("stop: cookie/err", flush=True); return
-            ldl += 1; hl.add(str(ep))
-            if ldl % 20 == 0: print(f"  ...leaders +{ldl}", flush=True)
+            if r is None: print("stop: cookie expired", flush=True); return
+            if r:
+                ldl += 1; hl.add(str(ep))
+                if ldl % 20 == 0: print(f"  ...leaders +{ldl}", flush=True)
             time.sleep(SLEEP_DL)
         print(f"round {rnd}: ours +{got} (total {len(have(OUR_DIR))}) | "
               f"leaders +{ldl} (total {len(have(LEAD_DIR))})", flush=True)
