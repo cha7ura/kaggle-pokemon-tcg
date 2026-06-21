@@ -91,6 +91,9 @@ def _pick_target(o, sel):
 
 
 def agent(obs_dict):
+    # deck request: answer from the raw dict BEFORE any parsing (never let it fall to fallback)
+    if not isinstance(obs_dict, dict) or obs_dict.get("select") is None:
+        return _DECK
     try:
         o = to_observation_class(obs_dict)
         if o.select is None:
