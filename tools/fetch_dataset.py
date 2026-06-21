@@ -70,8 +70,9 @@ def main():
     print(f"top-Elo (>= {MIN_SCORE}) episodes to consider: {len(ep_day)}", flush=True)
     ldl = 0
     for ep, day in ep_day.items():
-        if pull(ep, day, LEAD_DIR): ldl += 1
-        if ldl and ldl % 25 == 0: print(f"  ...leaders +{ldl}", flush=True)
+        if pull(ep, day, LEAD_DIR):
+            ldl += 1
+            if ldl % 25 == 0: print(f"  ...leaders +{ldl}", flush=True)
     print(f"leaders +{ldl} (total {len(glob.glob(LEAD_DIR+'/*.json'))})", flush=True)
 
 
