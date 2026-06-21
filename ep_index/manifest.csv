@@ -1,0 +1,6 @@
+date,daily_dataset_slug,daily_dataset_url,episode_count,total_bytes,top_avg_score,median_avg_score
+2026-06-16,pokemon-tcg-ai-battle-episodes-2026-06-16,https://www.kaggle.com/datasets/kaggle/pokemon-tcg-ai-battle-episodes-2026-06-16,1277,2854565943,1024.643707,627.771126
+2026-06-17,pokemon-tcg-ai-battle-episodes-2026-06-17,https://www.kaggle.com/datasets/kaggle/pokemon-tcg-ai-battle-episodes-2026-06-17,7819,21474554811,1259.804498,761.005766
+2026-06-18,pokemon-tcg-ai-battle-episodes-2026-06-18,https://www.kaggle.com/datasets/kaggle/pokemon-tcg-ai-battle-episodes-2026-06-18,6532,21474554331,1327.123541,926.601386
+2026-06-19,pokemon-tcg-ai-battle-episodes-2026-06-19,https://www.kaggle.com/datasets/kaggle/pokemon-tcg-ai-battle-episodes-2026-06-19,5426,21472784639,1324.930326,1013.694841
+2026-06-20,pokemon-tcg-ai-battle-episodes-2026-06-20,https://www.kaggle.com/datasets/kaggle/pokemon-tcg-ai-battle-episodes-2026-06-20,5178,21474153388,1311.233883,1063.760850
