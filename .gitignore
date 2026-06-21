@@ -9,3 +9,5 @@ sdk/cg/*.so
 sdk/cg/*.dll
 submission*/cg/
 json/
+deck.csv
+json_ours/
