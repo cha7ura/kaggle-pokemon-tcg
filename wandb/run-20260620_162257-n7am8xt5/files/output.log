@@ -1,0 +1,8 @@
+device=cpu params=287714
+== BC warm-start ==
+  BC data: 4083 samples
+  BC ep0 loss=1.159
+  BC ep1 loss=1.097
+warm wr_vs_heur 0.225
+it   0 train_hwr=0.500 wr_vs_heur=0.150 2.8s/it
+it   5 train_hwr=0.333 wr_vs_heur=0.100 5.2s/it

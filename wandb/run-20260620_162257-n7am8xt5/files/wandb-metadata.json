@@ -1,0 +1,35 @@
+{
+  "os": "Linux-6.10.14-linuxkit-x86_64-with-glibc2.41",
+  "python": "CPython 3.11.15",
+  "startedAt": "2026-06-20T16:22:57.852761Z",
+  "args": [
+    "--iters",
+    "6",
+    "--bc-games",
+    "30",
+    "--bc-epochs",
+    "2",
+    "--batch",
+    "6",
+    "--wandb"
+  ],
+  "program": "/app/colab/cg_a2c_train.py",
+  "codePath": "colab/cg_a2c_train.py",
+  "codePathLocal": "colab/cg_a2c_train.py",
+  "email": "cbattidiya@gmail.com",
+  "root": "/app",
+  "host": "8271d7c34854",
+  "executable": "/usr/local/bin/python",
+  "cpu_count": 10,
+  "cpu_count_logical": 10,
+  "disk": {
+    "/": {
+      "total": "1081100128256",
+      "used": "79657119744"
+    }
+  },
+  "memory": {
+    "total": "8218034176"
+  },
+  "writerId": "3ffesdyp9mf30fhwquxvnyp68bumnvby"
+}

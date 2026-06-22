@@ -1,0 +1,26 @@
+{
+  "os": "macOS-26.5.1-arm64-arm-64bit",
+  "python": "CPython 3.12.7",
+  "startedAt": "2026-06-20T12:46:47.147594Z",
+  "program": "<stdin>",
+  "git": {
+    "commit": "cabff1cbc6e5132b69d6f63925633426d6f20ba2"
+  },
+  "email": "cbattidiya@gmail.com",
+  "root": "/Users/chaturaattidiya/Documents/Github/kaggle/pokemon",
+  "host": "Chaturas-MacBook-Pro.local",
+  "executable": "/opt/anaconda3/bin/python3",
+  "cpu_count": 10,
+  "cpu_count_logical": 10,
+  "disk": {
+    "/": {
+      "total": "494384795648",
+      "used": "462495551488"
+    }
+  },
+  "memory": {
+    "total": "17179869184"
+  },
+  "apple": {},
+  "writerId": "lk217pvrjto5hwcjue3ro21uhfl1dbzg"
+}
