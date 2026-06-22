@@ -16,6 +16,9 @@ R = {int(r["cardId"]): r for r in rows}
 BASIC_ENERGY = {2, 3, 4, 5, 6, 7, 8, 9}          # unlimited copies allowed
 SEED = ["trevenant", "alakazam_top", "crustle", "lucario_meta"]
 META = ["alakazam_top", "trevenant", "crustle", "lucario_meta"]
+# real meta-share (from replays) -> field-weighted fitness (Crustle is ~1%, Lucario ~29%)
+FIELD_W = {"alakazam_top": 0.40, "lucario_meta": 0.33, "trevenant": 0.25, "crustle": 0.02}
+FRAGILITY = 0.35   # penalty per point a worst-matchup falls below 0.5 (AlphaStar anti-fragility / PFSP spirit)
 # deterministic-ish randomness varied by call (Math.random unavailable note is for workflows; here ok)
 RNG = random.Random(1234)
 
@@ -96,7 +99,12 @@ def fitness(slug, games):
                 try: sc = float(ln.split(":")[1].strip().rstrip(",")); break
                 except: pass
         scores.append(sc)
-    return sum(scores) / len(scores), scores
+    # field-weighted winrate MINUS fragility penalty (worst matchup below 0.5) = robust objective
+    wsum = sum(FIELD_W[o] for o in META)
+    fw = sum(FIELD_W[o] * s for o, s in zip(META, scores)) / wsum
+    worst = min(scores)
+    fit = fw - FRAGILITY * max(0.0, 0.5 - worst)
+    return fit, scores
 
 
 def main():
