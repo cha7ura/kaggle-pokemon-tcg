@@ -73,52 +73,69 @@ def build(s2id):
 
 
 META = ["alakazam_top", "trevenant", "crustle", "lucario_meta"]
-def gauntlet(slug, games):
-    out = []
-    for opp in META:
-        s = subprocess.run(
-            ["docker","run","--rm","--platform","linux/amd64","-v",f"{ROOT}:/app",
-             "-w","/app/autoresearch","-e","PYTHONPATH=/app/sdk","python:3.11-slim",
-             "python","eval.py","--challenger","agent_typh.py","--champion","agent_typh.py",
-             "--deck",f"decks/{slug}.csv","--deck-champion",f"decks/{opp}.csv","--games",str(games)],
-            capture_output=True,text=True,timeout=600).stdout
-        sc=0.0
-        for ln in s.splitlines():
-            if '"score"' in ln:
-                try: sc=float(ln.split(":")[1].strip().rstrip(",")); break
-                except: pass
-        out.append(sc)
-    return out
+FIELD_W = {"alakazam_top": 0.40, "lucario_meta": 0.33, "trevenant": 0.25, "crustle": 0.02}
+FRAGILITY = 0.35
+from concurrent.futures import ThreadPoolExecutor
+
+
+def _one(slug, opp, games):
+    s = subprocess.run(
+        ["docker","run","--rm","--platform","linux/amd64","-v",f"{ROOT}:/app",
+         "-w","/app/autoresearch","-e","PYTHONPATH=/app/sdk","python:3.11-slim",
+         "python","eval.py","--challenger","agent_typh.py","--champion","agent_typh.py",
+         "--deck",f"decks/{slug}.csv","--deck-champion",f"decks/{opp}.csv","--games",str(games)],
+        capture_output=True,text=True,timeout=900).stdout
+    for ln in s.splitlines():
+        if '"score"' in ln:
+            try: return float(ln.split(":")[1].strip().rstrip(","))
+            except: pass
+    return 0.0
+
+
+def gauntlet(slug, games, pool):
+    futs = {opp: pool.submit(_one, slug, opp, games) for opp in META}
+    return [futs[opp].result() for opp in META]
+
+
+def fitness(scores):
+    wsum = sum(FIELD_W.values())
+    fw = sum(FIELD_W[o]*s for o,s in zip(META,scores))/wsum
+    return fw - FRAGILITY*max(0.0, 0.5-min(scores))
 
 
 def main():
-    topN = int(sys.argv[1]) if len(sys.argv) > 1 else 20
+    topN = int(sys.argv[1]) if len(sys.argv) > 1 else 40
     games = int(sys.argv[2]) if len(sys.argv) > 2 else 30
-    # candidate wincons: stage2, dmg>=150, non-ex (prize economy), buildable line
+    workers = int(sys.argv[3]) if len(sys.argv) > 3 else 8
+    allow_ex = "--ex" in sys.argv
+    # candidate wincons: stage2 dmg>=150, buildable line; non-ex by default, +ex if --ex (broaden space)
     cands = []
     for r in rows:
         if r["cardType"] != "POKEMON" or not B(r, "stage2"): continue
         if F(r, "best_dmg") < 150: continue
-        if B(r, "ex") or B(r, "megaEx"): continue
+        if (B(r, "ex") or B(r, "megaEx")) and not allow_ex: continue
         if not line_of(r["name"]): continue
-        score = F(r,"best_dmg")/30 + F(r,"dmg_per_energy")/15 + F(r,"hp")/120 - F(r,"min_cost_for_best",9)*0.4
+        prize = 3 if B(r,"megaEx") else 2 if B(r,"ex") else 1
+        score = F(r,"best_dmg")/30 + F(r,"dmg_per_energy")/15 + F(r,"hp")/120 - F(r,"min_cost_for_best",9)*0.4 - (prize-1)*1.2
         cands.append((round(score,2), int(r["cardId"]), r["name"]))
     cands.sort(reverse=True)
     cands = cands[:topN]
-    print(f"role-pool sweep: {len(cands)} buildable non-ex wincons vs {META}\n", flush=True)
+    print(f"LARGE role-pool sweep: {len(cands)} wincons x {META} (field-weighted+fragility), "
+          f"{workers} parallel workers, {games} games\n", flush=True)
+    pool = ThreadPoolExecutor(max_workers=workers)
     res = []
     for sc, cid, nm in cands:
         deck = build(cid)
         if not deck: continue
         slug = "pool_" + re.sub(r"[^a-z0-9]","",nm.lower())
         open(f"{DECKS}/{slug}.csv","w").write("\n".join(map(str,deck))+"\n")
-        scores = gauntlet(slug, games); avg = sum(scores)/len(scores)
-        res.append((avg, nm, scores))
-        print(f"  {nm:22} field={avg:.3f}  {dict(zip(META,[round(s,2) for s in scores]))}", flush=True)
+        scores = gauntlet(slug, games, pool); fit = fitness(scores)
+        res.append((fit, nm, scores))
+        print(f"  {nm:22} fit={fit:.3f}  {dict(zip(META,[round(s,2) for s in scores]))}", flush=True)
     res.sort(reverse=True)
-    print("\n=== RANKED ===", flush=True)
-    for avg, nm, sc in res[:12]:
-        print(f"  {avg:.3f}  {nm}", flush=True)
+    print("\n=== RANKED by robust fitness ===", flush=True)
+    for fit, nm, sc in res[:15]:
+        print(f"  {fit:.3f}  {nm}  {dict(zip(META,[round(s,2) for s in sc]))}", flush=True)
 
 
 if __name__ == "__main__":
