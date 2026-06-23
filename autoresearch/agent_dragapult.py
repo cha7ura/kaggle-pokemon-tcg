@@ -12,16 +12,13 @@ from cg.api import (
 )
 
 
-import sys
-def _resolve_deck_path():
-    cands = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "deck.csv"),
-             "deck.csv", "/kaggle_simulations/agent/deck.csv"]
-    cands += [os.path.join(pp, "deck.csv") for pp in sys.path if pp]
-    for c in cands:
-        if os.path.exists(c): return c
-    raise FileNotFoundError("deck.csv not found")
 def read_deck(path=None):
-    path = path or os.environ.get("DRAG_DECK") or _resolve_deck_path()
+    # NO __file__ — Kaggle runs the agent via exec(), where __file__ is undefined.
+    path = path or os.environ.get("DRAG_DECK")
+    if not path:
+        path = "deck.csv"
+        if not os.path.exists(path):
+            path = "/kaggle_simulations/agent/deck.csv"
     with open(path) as f:
         return [int(line) for line in f if line.strip()][:60]
 

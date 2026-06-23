@@ -96,3 +96,8 @@ MEGA STARMIE PILOT (option 1, agent_starmie.py): remapped agent_typh constants t
 - Mechanics confirm Dragapult is the structural Trevenant counter: 320HP tanks Corner(90), Phantom Dive 200+6 spread ignores trap, Tera blocks bench dmg.
 - v16 = dragapult_agent.py (kiyotah public deck+pilot pair) + decks/dragapult.csv. Oracle 0.884 ~ champion 0.889 (won't tank). SUBMITTED (replaces champion live; restore submission_alakazam_top.tar.gz if <1005).
 - limitless #284 meta list compared: our shipped deck = ~90% of it (full shell match). Only gap = Munkidori (id112)+Darkness combo, pilot can't run it (un-pilotable, would degrade like Enhanced Hammer). Future: Munkidori-aware pilot extension if v16 succeeds.
+
+## 2026-06-23 — v16 Dragapult ERRORed -> v18 FIXED
+- v16 ERROR cause: dragapult_agent.py was a LOCAL benchmark, never Kaggle-submitted. Its agent() called to_observation_class(obs_dict) BEFORE checking the deck phase, and had NO try/except. eval never tests the deck-phase path (decks passed up front), so it slipped through. On Kaggle the select=None deck request crashed the converter -> ERROR (same failure mode as v12 Trevenant).
+- FIX (v18, autoresearch/agent_dragapult.py): hardened agent() wrapper — (1) answer deck request from RAW dict before conversion, (2) try/except around _agent_impl returning _legal_fallback_from_dict (typh/keidroid proven pattern). Validated in docker: deck-phase returns 60 (3 variants), crash-safe on malformed obs (-> []), 0.9 vs Trevenant in-play intact. Submitted. Champion restored as v17 in between.
+- Note: "100% #284 list" needs Munkidori (id112)+Darkness combo; pilot has no Munkidori code -> un-pilotable without pilot extension (future work).
