@@ -18,6 +18,7 @@ ARCH = {743: "Alakazam", 678: "MegaLucario", 1031: "MegaStarmie", 345: "Crustle"
 # add Trevenant + Bellibolt if their ids resolve by name
 for cid, nm in names.items():
     if nm == "Hop's Trevenant": ARCH.setdefault(cid, "Trevenant")
+    if nm == "Dragapult ex": ARCH.setdefault(cid, "Dragapult")
     if "Bellibolt" in nm: ARCH.setdefault(cid, "Bellibolt")
     if "Cinderace" in nm: ARCH.setdefault(cid, "MegaStarmie")  # keidroid combo marker
 
