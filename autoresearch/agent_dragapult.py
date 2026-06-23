@@ -52,6 +52,8 @@ Lillie_Determination = 1227
 Team_Rocket_Watchtower = 1256
 Basic_Fire_Energy = 2
 Basic_Psychic_Energy = 5
+Basic_Darkness_Energy = 9
+Munkidori = 112
 
 UNNECESSARY = -10000000
 
@@ -384,6 +386,12 @@ def _agent_impl(obs_dict: dict) -> list:
             if active:
                 score += 1000
             return score
+        if pokemon.id == Munkidori:
+            # Adrena-Brain needs exactly 1 Darkness on the (benched) Munkidori; nothing else.
+            if (attach_id == Basic_Darkness_Energy
+                    and not any(e.id == Basic_Darkness_Energy for e in pokemon.energies)):
+                return 21000
+            return -1
         if pokemon.id == Budew:
             return -1
         elif pokemon.id in (Meowth_ex, Fezandipiti_ex, Latias_ex):
@@ -690,6 +698,12 @@ def _agent_impl(obs_dict: dict) -> list:
                                     score -= 100000
                             if no_damage_counter(card):
                                 score = -1
+                elif context == SelectContext.REMOVE_DAMAGE_COUNTER:
+                    # Munkidori source: take counters off OUR most-damaged Pokémon (heal it).
+                    if isinstance(card, Pokemon):
+                        base = card_table.get(card.id)
+                        maxhp = base.hp if base is not None else hp
+                        score = 1000 + max(0, maxhp - hp)
                 elif context == SelectContext.ATTACH_FROM:
                     score = attach_score(context_card_id, card,
                                          o.area == AreaType.ACTIVE)
@@ -773,7 +787,10 @@ def _agent_impl(obs_dict: dict) -> list:
                 score += 70000
         elif o.type == OptionType.ABILITY:
             card = get_card(obs, o.area, o.index, my_index)
-            if no_draw:
+            if card.id == Munkidori:
+                # Adrena-Brain: move our damage onto the opponent — heal + chip toward KOs.
+                score = 45000
+            elif no_draw:
                 score = -1
             elif card.id == 1267:
                 score = 1
