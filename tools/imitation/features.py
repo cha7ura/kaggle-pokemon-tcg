@@ -2,22 +2,24 @@
 """Shared featurizer for the imitation league. Operates on the RAW observation dict so the
 exact same code runs offline (replay obs) and in-sim (live obs). STDLIB ONLY."""
 
-STATE_NAMES = [
+# Tuples (immutable) so the exported STATE_DIM/OPTION_DIM can't be corrupted by callers
+# mutating these module-level constants.
+STATE_NAMES = (
     "turn", "turn_action_count", "supporter_played", "stadium_played",
     "my_active_hp", "my_active_maxhp", "my_active_dmg", "my_active_energy",
     "my_bench", "my_hand", "my_prize_left",
     "my_asleep", "my_confused", "my_paralyzed", "my_poisoned", "my_burned",
     "opp_active_hp", "opp_active_maxhp", "opp_active_dmg", "opp_active_energy",
     "opp_bench", "opp_hand", "opp_prize_left",
-]
-OPTION_NAMES = ["context", "opt_type", "opt_area", "opt_index", "n_options",
-                "min_count", "max_count"]
+)
+OPTION_NAMES = ("context", "opt_type", "opt_area", "opt_index", "n_options",
+                "min_count", "max_count")
 STATE_DIM = len(STATE_NAMES)
 OPTION_DIM = len(OPTION_NAMES)
 
 
 def feature_names():
-    return STATE_NAMES + OPTION_NAMES
+    return list(STATE_NAMES + OPTION_NAMES)
 
 
 def _active(player):
@@ -27,6 +29,8 @@ def _active(player):
 
 def _prize_left(player):
     p = player.get("prize") or []
+    # prize holds remaining face-down prize cards (replays: starts [null]*6, shrinks as taken),
+    # so len() == prizes remaining. Correct, not a bug.
     return len(p)
 
 
@@ -53,6 +57,8 @@ def state_features(current, seat):
           float(_prize_left(me))]
     f += [1.0 if me.get(k) else 0.0 for k in ("asleep", "confused", "paralyzed", "poisoned", "burned")]
     f += act_fields(oa)
+    # Asymmetry is intentional: your own hand is fully visible (fallback to len(hand) above),
+    # but the opponent's hand is hidden information, so it falls back to 0 when handCount is absent.
     f += [float(len(opp.get("bench") or [])), float(opp.get("handCount", 0)),
           float(_prize_left(opp))]
     return f

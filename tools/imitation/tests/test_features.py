@@ -1,10 +1,11 @@
 # tools/imitation/tests/test_features.py
-import json, glob
+import json, glob, math
 from tools.imitation.features import state_features, option_features, STATE_DIM, OPTION_DIM
 
 def _a_decision():
     for f in sorted(glob.glob("json/*.json"))[:50]:
-        d = json.load(open(f))
+        with open(f) as fh:
+            d = json.load(fh)
         for s in d["steps"]:
             for seat in (0, 1):
                 obs = s[seat].get("observation", {})
@@ -22,6 +23,7 @@ def test_state_features_shape_and_finite():
     v = state_features(cur, seat)
     assert len(v) == STATE_DIM
     assert all(isinstance(x, (int, float)) for x in v)
+    assert all(math.isfinite(x) for x in v)
 
 def test_option_features_shape():
     cur, sel, seat = _a_decision()
