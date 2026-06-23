@@ -16,6 +16,11 @@ def deck_sig_of(deck):
     return "_".join(str(x) for x in sorted(deck))
 
 
+def sig_to_fname(sig):
+    """Short, filesystem-safe filename stem for a (long) deck signature."""
+    return hashlib.sha256(sig.encode()).hexdigest()[:16]
+
+
 def _deck_of(steps, seat):
     for s in steps:
         a = s[seat].get("action")
@@ -84,7 +89,7 @@ def main():
             sig = r["deck_sig"]
             if sig not in files:
                 # Use a short hash for the filename — full sigs can exceed OS filename limits.
-                fname = hashlib.sha256(sig.encode()).hexdigest()[:16]
+                fname = sig_to_fname(sig)
                 files[sig] = open(os.path.join(DATA, f"{fname}.jsonl"), "a")
             files[sig].write(json.dumps(r) + "\n")
             m = meta[sig]; m["player"] = r["player"]; m["decisions"] += 1
@@ -94,7 +99,8 @@ def main():
     manifest = []
     for sig, m in meta.items():
         deck = [int(x) for x in sig.split("_")]
-        manifest.append({"deck_sig": sig, "player": m["player"],
+        manifest.append({"deck_sig": sig, "file": sig_to_fname(sig),
+                         "player": m["player"],
                          "archetype": _archetype(deck),
                          "games": len(m["games"]), "decisions": m["decisions"]})
     manifest.sort(key=lambda x: -x["games"])
