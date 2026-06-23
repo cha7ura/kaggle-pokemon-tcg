@@ -16,4 +16,5 @@ def pick(tree, option_vecs, state, min_count, max_count):
                     key=lambda j: -score(tree, state + option_vecs[j]))
     k = max(1, min(max_count or 1, len(option_vecs)))
     k = max(k, min_count or 0)
+    k = min(k, len(option_vecs))
     return scored[:k]

@@ -19,3 +19,8 @@ def test_pick_multi_select_returns_top_k():
     opts = [[1.0], [0.0], [1.0]]
     out = pick(TREE, opts, [], min_count=2, max_count=2)
     assert len(out) == 2 and set(out) <= {0, 2}
+
+def test_pick_clamps_to_option_count():
+    # min_count larger than available options must not return more than exist
+    out = pick(TREE, [[1.0], [0.0]], [], min_count=5, max_count=5)
+    assert len(out) == 2 and set(out) == {0, 1}
