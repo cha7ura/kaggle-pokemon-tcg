@@ -12,7 +12,9 @@ from cg.api import (
 )
 
 
-def read_deck(path="decks/dragapult.csv"):
+def read_deck(path=None):
+    # ponytail: env override lets the card-counting prior match the deck under test
+    path = path or os.environ.get("DRAG_DECK", "decks/dragapult.csv")
     with open(path) as f:
         return [int(line) for line in f if line.strip()][:60]
 

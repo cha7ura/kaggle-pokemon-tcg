@@ -24,7 +24,8 @@ def field_decks(field_min):
 def _one(cand_slug, pilot, opp_slug, games):
     s = subprocess.run(
         ["docker", "run", "--rm", "--platform", "linux/amd64", "-v", f"{ROOT}:/app",
-         "-w", "/app/autoresearch", "-e", "PYTHONPATH=/app/sdk", "python:3.11-slim",
+         "-w", "/app/autoresearch", "-e", "PYTHONPATH=/app/sdk",
+         "-e", f"DRAG_DECK=decks/{cand_slug}.csv", "python:3.11-slim",
          "python", "eval.py", "--challenger", pilot, "--champion", "agent_typh.py",
          "--deck", f"decks/{cand_slug}.csv", "--deck-champion", f"decks/field/{opp_slug}.csv",
          "--games", str(games)],
