@@ -15,6 +15,11 @@ for cid, r in FULL.items(): NAME2ID.setdefault(r["name"], cid)
 EN = list(csv.DictReader(open(f"{ROOT}/data/EN_Card_Data.csv")))
 EN_BY_NAME = collections.defaultdict(list)
 for r in EN: EN_BY_NAME[r.get("Card Name")].append(r)
+# OCR fallback (full pool, from the PDF) — used when EN_Card_Data lacks effect text
+OCR = {}
+_ocr_path = f"{ROOT}/data/card_ocr.csv"
+if os.path.exists(_ocr_path):
+    OCR = {int(r["cardId"]): r["ocr_text"] for r in csv.DictReader(open(_ocr_path))}
 
 
 def text_of(cid):
@@ -23,7 +28,12 @@ def text_of(cid):
     out = [f"{cid} {r['name']} [{r['cardType']}] HP{r['hp'] or '-'} {r['type'] or ''} "
            f"weak={r['weakness'] or '-'}"]
     rows = EN_BY_NAME.get(r["name"], [])
-    if not rows: out.append("   (no EN effect text)")
+    if not rows or not any(e.get("Effect Explanation") not in ("", "n/a", None) for e in rows):
+        if OCR.get(cid):
+            out.append("   [OCR fallback]:")
+            out.append("   " + OCR[cid].replace("\n", " ").strip()[:600])
+            return "\n".join(out)
+        out.append("   (no EN effect text)")
     for e in rows:
         mv = e.get("Move Name", ""); ef = e.get("Effect Explanation", ""); rule = e.get("Rule", "")
         cat = e.get("Category", "")
