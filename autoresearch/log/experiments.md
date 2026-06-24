@@ -114,3 +114,18 @@ MEGA STARMIE PILOT (option 1, agent_starmie.py): remapped agent_typh constants t
 - MUNKIDORI PILOT EXTENSION (agent_dragapult.py): added Munkidori=112/Darkness=9 consts; attach_score gives Darkness->benched Munkidori (21000, 1 only); ABILITY uses Adrena-Brain (45000); REMOVE_DAMAGE_COUNTER picks our most-damaged mon as source (NUMBER picks max=3, YES activates — already generic). Adrena-Brain now FIRES (ACTIVATE ctx 43 confirmed; was absent before). BUT cand_drag284 only 0.774->0.788 (noise-tied), still -0.10 vs sample. Ability firing insufficient; #284's real edge is the Dusknoir package + combo timing (bigger project). Edits DORMANT for sample deck (0.887~0.879) -> v19 unaffected/safe. Verdict: keep v19 sample Dragapult; don't ship #284.
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+## 2026-06-24 — Imitation league Stage-2 validation (learned-26, N=30, 9750 games)
+Round-robin of the 26 learned-policy decks, 30 games/pairing, stored in replays.sqlite (league_games).
+Throughput 298 games/s on 6 docker shards.
+
+Trevenant (us) league win rate vs real ladder:
+- overall vs field   league 0.604  | real 0.605   <- bullseye
+- Alakazam           league 0.641  | real 0.64    <- bullseye
+- MegaLucario        league 0.696  | real 0.86
+- MegaStarmie        league 0.272  | real 0.41
+- Dragapult          league 0.627  | real 0.32  (typh-oracle said 0.80) <- STILL WRONG DIRECTION
+
+Verdict: league machinery validated (aggregate + Alakazam dead-on, oracle realistic where data thick).
+Dragapult cell still inverted -> imitation Dragapult pilot too weak (thin policy from few games).
+Fix = more Dragapult replays (fetch running) -> retrain stronger Dragapult policy. Not a harness bug.
