@@ -89,6 +89,34 @@ def policies():
     return {"rows": rows, "count": len(rows)}
 
 
+_LEAGUE_CACHE = {}
+
+
+def league(batch="full182-n30"):
+    """Archetype-vs-archetype win-rate matrix from the latest full league batch (cached)."""
+    if batch in _LEAGUE_CACHE:
+        return _LEAGUE_CACHE[batch]
+    db = _db()
+    arch = {fn: a for fn, a in db.execute("SELECT fname,archetype FROM decks")}
+    W = collections.defaultdict(float); N = collections.defaultdict(int)
+    for a, b, w in db.execute("SELECT deck_a,deck_b,winner FROM league_games WHERE batch=?", (batch,)):
+        aa, ab = arch.get(a), arch.get(b)
+        if not aa or not ab:
+            continue
+        W[(aa, ab)] += 1.0 if w == 0 else 0.5 if w == 2 else 0.0; N[(aa, ab)] += 1
+        W[(ab, aa)] += 1.0 if w == 1 else 0.5 if w == 2 else 0.0; N[(ab, aa)] += 1
+    db.close()
+    archs = sorted(set(arch.values()))
+    # rank archetypes by mean win rate vs all others
+    rank = sorted(archs, key=lambda x: -(sum(W[(x, y)] for y in archs if N[(x, y)]) /
+                                         max(sum(N[(x, y)] for y in archs), 1)))
+    matrix = [{"a": x, "cells": [{"b": y, "wr": round(W[(x, y)] / N[(x, y)], 3) if N[(x, y)] else None}
+                                 for y in rank]} for x in rank]
+    out = {"archs": rank, "matrix": matrix, "batch": batch}
+    _LEAGUE_CACHE[batch] = out
+    return out
+
+
 PAGE = """<!doctype html><html><head><meta charset=utf8><title>pokemon stats</title>
 <style>
 body{font:14px system-ui,sans-serif;margin:24px;background:#0f1115;color:#e6e6e6}
@@ -103,6 +131,7 @@ small{color:#789}
 <h1>Pokémon TCG — ladder stats <small id=db></small></h1>
 <div id=sum></div>
 <h2>Our Trevenant — win rate by opponent archetype</h2><div id=match></div>
+<h2>League: archetype vs archetype (row beats column)</h2><div id=league></div>
 <h2>Field composition (weighted)</h2><div id=field></div>
 <h2>Policy coverage</h2><div id=pol></div>
 <script>
@@ -121,6 +150,17 @@ j('/api/matchups').then(m=>{
     h+=`<tr><td>${r.archetype}</td><td>${r.winrate}</td><td><span class=bar style="width:${Math.round(r.winrate*120)}px;background:${c=='win'?'#3a6':c=='lose'?'#c54':'#ca5'}"></span></td><td>${r.games}</td></tr>`;}
   document.getElementById('match').innerHTML=h+'</table>';
 });
+j('/api/league').then(L=>{
+  let h=`<small>batch ${L.batch}</small><table><tr><th></th>`;
+  for(const a of L.archs)h+=`<th>${a.slice(0,4)}</th>`;
+  h+='</tr>';
+  for(const row of L.matrix){h+=`<tr><td>${row.a}</td>`;
+    for(const c of row.cells){if(c.wr==null){h+='<td>·</td>';continue;}
+      let g=Math.round(c.wr*180+40),r=Math.round((1-c.wr)*180+40);
+      h+=`<td style="background:rgb(${r},${g},60);color:#000">${c.wr.toFixed(2)}</td>`;}
+    h+='</tr>';}
+  document.getElementById('league').innerHTML=h+'</table>';
+});
 j('/api/field').then(f=>{let mx=Math.max(...f.rows.map(r=>r.count));
   let h='<table>';for(const r of f.rows)h+=`<tr><td>${r.archetype}</td><td>${r.count}</td><td><span class=bar style="width:${Math.round(r.count/mx*160)}px;background:#46a"></span></td></tr>`;
   document.getElementById('field').innerHTML=h+'</table>';
@@ -133,7 +173,7 @@ j('/api/policies').then(p=>{
 </script></body></html>"""
 
 ROUTES = {"/api/summary": summary, "/api/matchups": matchups,
-          "/api/field": field, "/api/policies": policies}
+          "/api/field": field, "/api/policies": policies, "/api/league": league}
 
 
 class H(BaseHTTPRequestHandler):
