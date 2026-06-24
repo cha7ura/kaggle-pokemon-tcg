@@ -20,13 +20,27 @@ BASIC_ENERGY = {2, 3, 4, 5, 6, 7, 8, 9}          # unlimited copies allowed
 FRAGILITY = 0.35   # penalty per point a worst-matchup falls below 0.5 (anti-fragility / PFSP spirit)
 RNG = random.Random(1234)
 
-# real meta from the replay db: seed from the most common decks, score vs the top-weight field
+
+def _is_pokemon(c):
+    r = R.get(c, {})
+    return any(r.get(k) == "True" for k in ("basic", "stage1", "stage2")) and "ENERGY" not in r.get("cardType", "").upper()
+
+
+def _is_energy(c):
+    return "ENERGY" in R.get(c, {}).get("cardType", "").upper()
+
+
+# real meta from the replay db. COHERENCE: evolve WITHIN one archetype (default Trevenant = us), so
+# mutants stay legal real decks instead of cross-archetype junk that only beats the weak typh pilot.
 _db = sqlite3.connect(f"{ROOT}/replays.sqlite")
-_ranked = [fn for fn, c in _db.execute("SELECT fname,count FROM decks ORDER BY count DESC")]
+_count = {fn: c for fn, c in _db.execute("SELECT fname,count FROM decks")}
 _arch = {fn: a for fn, a in _db.execute("SELECT fname,archetype FROM decks")}
-SEED_SLUGS = _ranked[:6]                          # evolve from the actual common meta
+_ranked = sorted(_count, key=lambda s: -_count[s])
+ARCHE = sys.argv[5] if len(sys.argv) > 5 else "Trevenant"
 N_FIELD = int(sys.argv[4]) if len(sys.argv) > 4 else 30
-FIELD_SLUGS = _ranked[:N_FIELD]                   # fitness opponents (weight concentrated in the head)
+FIELD_SLUGS = _ranked[:N_FIELD]                   # score vs the whole field (weight in the head)
+_arch_slugs = sorted([s for s in _ranked if _arch.get(s) == ARCHE], key=lambda s: -_count[s])
+SEED_SLUGS = _arch_slugs[:4]
 
 
 def load(slug):
@@ -37,18 +51,55 @@ def save(deck, slug):
     open(f"{DECKS}/{slug}.csv", "w").write("\n".join(map(str, deck)) + "\n")
 
 
-# card pool to mutate WITHIN: every card across the top ~40 field decks (coherent, on-meta)
+# pool = cards from this archetype's REAL decks only (coherent). Energies likewise restricted to
+# what the archetype actually plays (Trevenant runs special energies, never basic).
 POOL = set()
-for s in _ranked[:40]:
+for s in _arch_slugs:
     POOL |= set(_deck_of(s))
 POOL = sorted(POOL)
+ENERGY_POOL = [c for c in POOL if _is_energy(c)] or [11]          # fallback Mist Energy
+# core attacker = most common Pokémon across the seed decks; require >=3 copies
+_seed_cards = Counter()
+for s in SEED_SLUGS:
+    _seed_cards.update(_deck_of(s))
+CORE = max((c for c in _seed_cards if _is_pokemon(c)), key=lambda c: _seed_cards[c], default=None)
+MIN_CORE = 3
 
 
 def legal(deck):
     if len(deck) != 60: return False
-    for c, n in Counter(deck).items():
+    cnt = Counter(deck)
+    for c, n in cnt.items():
+        if c not in POOL: return False            # archetype-coherent: no foreign cards
         if c not in BASIC_ENERGY and n > 4: return False
+    if CORE is not None and cnt[CORE] < MIN_CORE: return False   # must keep the core attacker
     return True
+
+
+def _cap(c):
+    return 99 if c in BASIC_ENERGY else 4
+
+
+def _repair(cards):
+    """Coerce any card multiset into a legal, coherent 60-card deck of THIS archetype."""
+    cnt = Counter(c for c in cards if c in POOL)    # drop foreign cards
+    for c in list(cnt):                             # max-4 (special energy included)
+        cnt[c] = min(cnt[c], _cap(c))
+    if CORE is not None:                            # guarantee the core attacker
+        cnt[CORE] = max(cnt.get(CORE, 0), MIN_CORE)
+    deck = []
+    for c, n in cnt.items():
+        deck += [c] * n
+    while len(deck) > 60:                           # trim, but never below MIN_CORE of CORE
+        i = RNG.randrange(len(deck))
+        if deck[i] == CORE and deck.count(CORE) <= MIN_CORE:
+            continue
+        deck.pop(i)
+    while len(deck) < 60:                           # pad with real cards under their cap (energy first)
+        opts = ([e for e in ENERGY_POOL if deck.count(e) < 4]
+                or [c for c in POOL if deck.count(c) < _cap(c)])
+        deck.append(RNG.choice(opts))
+    return deck
 
 
 def mutate(deck, k=3):
@@ -56,18 +107,13 @@ def mutate(deck, k=3):
     for _ in range(k):
         op = RNG.random()
         if op < 0.45 and d:                       # swap one copy for a pool card
-            i = RNG.randrange(len(d)); d[i] = RNG.choice(POOL)
-        elif op < 0.75 and d:                     # remove a copy, add a pool card (count shift)
+            d[RNG.randrange(len(d))] = RNG.choice(POOL)
+        elif op < 0.75 and d:                     # remove a copy, add a pool card
             d.pop(RNG.randrange(len(d))); d.append(RNG.choice(POOL))
-        else:                                     # duplicate an existing card (raise a count)
+        else:                                     # raise a count
             d[RNG.randrange(len(d))] = RNG.choice(d)
-    # enforce 60 + max-4
-    cnt = Counter(d); fixed = []
-    for c, n in cnt.items():
-        fixed += [c] * (n if c in BASIC_ENERGY else min(n, 4))
-    while len(fixed) < 60: fixed.append(RNG.choice(list(BASIC_ENERGY)))
-    fixed = fixed[:60]
-    return fixed if legal(fixed) else deck
+    out = _repair(d)
+    return out if legal(out) else deck
 
 
 def crossover(a, b):
@@ -76,14 +122,7 @@ def crossover(a, b):
     for c in set(ca) | set(cb):
         n = ca.get(c, 0) if RNG.random() < 0.5 else cb.get(c, 0)
         child += [c] * n
-    # trim/pad to 60 legal
-    child = child[:60]
-    while len(child) < 60: child.append(RNG.choice(list(BASIC_ENERGY)))
-    cnt = Counter(child); fixed = []
-    for c, n in cnt.items():
-        fixed += [c] * (n if c in BASIC_ENERGY else min(n, 4))
-    while len(fixed) < 60: fixed.append(RNG.choice(list(BASIC_ENERGY)))
-    return fixed[:60]
+    return _repair(child)
 
 
 def fitness(deck, games):
