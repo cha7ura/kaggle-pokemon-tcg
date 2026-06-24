@@ -149,3 +149,14 @@ Validation (challenge_field, candidate typh):
 ga_best has NO losing matchup (worst 0.525>0.5). Edge consistent across both pilot regimes ->
 real, not a typh artifact. Saved decks/trev_ga1.csv. Candidate for live-ladder A/B vs f03.
 Caveat: sim absolutes != ladder; relative signal strong. Ladder is the only final judge.
+
+## 2026-06-24 — trev_ga1 LIVE A/B: LOST (823.8 vs Dragapult v19 909.9)
+Submitted the coherent GA winner trev_ga1. Ladder publicScore 823.8 — BELOW Dragapult v19 (909.9,
+displaced) AND the trev_typh baseline (928.8, same deck minus the 6 GA swaps). Reverted to v19.
+LESSON (critical): the sim oracle does NOT predict the real ladder. Offline +0.057 (even the
+"non-gameable" learned-policy-field gate) -> -86 real. Root cause = fitness pilots too weak (typh /
+thin imitation policies) so the simulated field != real ladder. Small sim margins are noise.
+Implication: don't trust sub-0.10 sim deltas for live decks. Either (a) make the oracle predictive
+(more top-10 data + stronger/self-play pilots) and RE-TEST whether sim ranks known decks correctly,
+or (b) ladder-as-judge with conservative changes only. Next gate: does the league rank our known-
+score submissions (Dragapult 909.9, trev_typh 928.8, Alakazam 896-1005, Lucario 505) in ladder order?
