@@ -39,6 +39,13 @@ CREATE TABLE IF NOT EXISTS policies (
   tree_json TEXT,               -- stdlib-walkable tree
   PRIMARY KEY (deck_sig, version)
 );
+CREATE TABLE IF NOT EXISTS league_games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  batch TEXT, deck_a TEXT, deck_b TEXT, pilot_a TEXT, pilot_b TEXT,
+  winner INTEGER,               -- 0=deck_a, 1=deck_b, 2=draw
+  steps INTEGER, created REAL,
+  trace BLOB                    -- reserved: zlib(move trace) for self-play; NULL for now
+);
 """
 
 
@@ -195,6 +202,36 @@ def sync_policies(pol_dir=f"{ROOT}/tools/imitation/policies",
 
 def build_artifacts(note=""):
     store_cards(); store_decks(); sync_policies(note=note)
+
+
+def store_league_games(rows, batch, created=None):
+    """Bulk-insert per-game league results. rows: dicts with
+    deck_a, deck_b, pilot_a, pilot_b, winner, steps (trace optional zlib blob)."""
+    db = _connect()
+    t = created if created is not None else time.time()
+    db.executemany(
+        "INSERT INTO league_games (batch,deck_a,deck_b,pilot_a,pilot_b,winner,steps,created,trace) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        [(batch, r["deck_a"], r["deck_b"], r.get("pilot_a"), r.get("pilot_b"),
+          r["winner"], r.get("steps"), t, r.get("trace")) for r in rows])
+    db.commit(); db.close()
+    return len(rows)
+
+
+def league_matrix(batch=None):
+    """Win counts per ordered (deck_a, deck_b): {(a,b): {'a':wins, 'b':wins, 'd':draws, 'n':games}}."""
+    db = _connect()
+    q = "SELECT deck_a,deck_b,winner FROM league_games"
+    params = ()
+    if batch:
+        q += " WHERE batch=?"; params = (batch,)
+    m = {}
+    for a, b, win in db.execute(q, params):
+        cell = m.setdefault((a, b), {"a": 0, "b": 0, "d": 0, "n": 0})
+        cell["n"] += 1
+        cell["a" if win == 0 else "b" if win == 1 else "d"] += 1
+    db.close()
+    return m
 
 
 def _selftest():
