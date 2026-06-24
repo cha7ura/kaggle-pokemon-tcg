@@ -458,7 +458,8 @@ git commit -m "feat(imitation): stdlib serialized-tree inference (score/pick)"
 - Consumes: decision tables from Task 2, `policy.score`, `features.STATE_DIM/OPTION_DIM`.
 - Produces: `export_tree(clf) -> dict` (sklearn tree → the serialized dict shape of Task 3);
   `train_deck(sig) -> dict` (`{tree, accuracy, baseline, n, by_context}`); `main()` that trains all
-  ≥30g decks, writes `tools/imitation/policies/<sig>.json`, and prints an accuracy table.
+  ≥30g decks, writes `tools/imitation/policies/<file>.json` (filename = manifest `file` = hashed sig,
+  since raw deck sigs exceed OS filename limits), and prints an accuracy table.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -495,6 +496,7 @@ top-1 accuracy on a held-out split — the Stage-1 go/no-go signal. sklearn allo
 import json, os, glob, collections, random
 from sklearn.tree import DecisionTreeClassifier
 from tools.imitation.policy import score
+from tools.imitation.extract_decisions import sig_to_fname  # deck sigs are too long to be filenames
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "data")
@@ -522,7 +524,7 @@ def export_tree(clf):
 
 def _load(sig):
     recs = []
-    p = os.path.join(DATA, f"{sig}.jsonl")
+    p = os.path.join(DATA, f"{sig_to_fname(sig)}.jsonl")
     for line in open(p):
         line = line.strip()
         if line:
@@ -567,7 +569,7 @@ def main():
         if m["games"] < FLOOR:
             continue
         res = train_deck(m["deck_sig"])
-        json.dump(res["tree"], open(os.path.join(POL, f"{m['deck_sig']}.json"), "w"))
+        json.dump(res["tree"], open(os.path.join(POL, f"{m['file']}.json"), "w"))
         rows.append((m, res))
         print(f"  {m['games']:4}g acc={res['accuracy']:.3f} base={res['baseline']:.3f} "
               f"lift={res['accuracy']-res['baseline']:+.3f}  {m['archetype']:12} {m['player']}")
@@ -631,24 +633,27 @@ def _load_agent():
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
     return mod
 
-def test_deck_phase_returns_60(tmp_path, monkeypatch):
-    # any learned policy + the matching deck
+def _a_learned_deck():
+    # returns (deck_sig, policy_file_stem) for a >=30g deck; policy files are named by m["file"]
     manifest = json.load(open("tools/imitation/data/manifest.json"))
-    sig = next(m["deck_sig"] for m in manifest if m["games"] >= 30)
+    m = next(m for m in manifest if m["games"] >= 30)
+    return m["deck_sig"], m["file"]
+
+def test_deck_phase_returns_60(tmp_path, monkeypatch):
+    sig, fstem = _a_learned_deck()
     deck = sig.split("_")
     deckcsv = tmp_path / "deck.csv"; deckcsv.write_text("\n".join(deck))
     monkeypatch.setenv("IMIT_DECK", str(deckcsv))
-    monkeypatch.setenv("IMIT_POLICY", f"tools/imitation/policies/{sig}.json")
+    monkeypatch.setenv("IMIT_POLICY", f"tools/imitation/policies/{fstem}.json")
     mod = _load_agent()
     out = mod.agent({"select": None})
     assert isinstance(out, list) and len(out) == 60
 
 def test_in_play_returns_legal_indices(tmp_path, monkeypatch):
-    manifest = json.load(open("tools/imitation/data/manifest.json"))
-    sig = next(m["deck_sig"] for m in manifest if m["games"] >= 30)
+    sig, fstem = _a_learned_deck()
     deckcsv = tmp_path / "deck.csv"; deckcsv.write_text("\n".join(sig.split("_")))
     monkeypatch.setenv("IMIT_DECK", str(deckcsv))
-    monkeypatch.setenv("IMIT_POLICY", f"tools/imitation/policies/{sig}.json")
+    monkeypatch.setenv("IMIT_POLICY", f"tools/imitation/policies/{fstem}.json")
     mod = _load_agent()
     # find a real decision obs
     for f in sorted(glob.glob("json/*.json"))[:10]:
@@ -787,11 +792,11 @@ git commit -m "feat(imitation): generic stdlib imitation pilot (deck+policy -> o
 from tools.imitation.league import opponent_pilot
 
 def test_opponent_pilot_routing():
-    # a deck_sig with a policy file -> imitation; else typh
-    import os, glob
-    pol = sorted(glob.glob("tools/imitation/policies/*.json"))
-    assert pol, "need at least one trained policy (run Task 4)"
-    sig = os.path.splitext(os.path.basename(pol[0]))[0]
+    # a deck_sig with a learned policy -> imitation; an unknown sig -> typh
+    import json, glob
+    assert glob.glob("tools/imitation/policies/*.json"), "need a trained policy (run Task 4)"
+    manifest = json.load(open("tools/imitation/data/manifest.json"))
+    sig = next(m["deck_sig"] for m in manifest if m["games"] >= 30)
     kind, _ = opponent_pilot(sig)
     assert kind == "imitation"
     kind2, _ = opponent_pilot("999999_does_not_exist")
@@ -812,6 +817,7 @@ deck with its LEARNED policy (imitation) instead of generic typh. Thin decks fal
 Reuses the docker eval harness and extract_field weights."""
 import os, json, glob, subprocess, sys, statistics as st
 from concurrent.futures import ThreadPoolExecutor
+from tools.imitation.extract_decisions import sig_to_fname  # policy files named by hashed sig
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 POL = os.path.join(os.path.dirname(__file__), "policies")
@@ -819,7 +825,7 @@ FIELD = json.load(open(f"{ROOT}/autoresearch/decks/field/weights.json"))
 
 
 def opponent_pilot(deck_sig):
-    p = os.path.join(POL, f"{deck_sig}.json")
+    p = os.path.join(POL, f"{sig_to_fname(deck_sig)}.json")
     if os.path.exists(p):
         return "imitation", p
     return "typh", None

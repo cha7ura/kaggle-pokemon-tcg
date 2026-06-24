@@ -1,51 +1,51 @@
 [
 {
 "slug": "f00",
-"count": 930,
+"count": 1097,
 "archetype": "Trevenant",
-"team": "graybackcat"
+"team": "charmq"
 },
 {
 "slug": "f01",
-"count": 515,
+"count": 560,
 "archetype": "Alakazam",
-"team": "TrustHub hiroingk"
+"team": "hiroingk"
 },
 {
 "slug": "f02",
-"count": 346,
-"archetype": "MegaLucario",
-"team": "Natsuki Kasubata"
+"count": 457,
+"archetype": "Dragapult",
+"team": "Chekhlov Dmitrii"
 },
 {
 "slug": "f03",
-"count": 337,
-"archetype": "Dragapult",
-"team": "NecromanAlbert"
-},
-{
-"slug": "f04",
-"count": 306,
+"count": 422,
 "archetype": "Trevenant",
 "team": "The Debauchery Tea Party"
 },
 {
+"slug": "f04",
+"count": 346,
+"archetype": "MegaLucario",
+"team": "shim"
+},
+{
 "slug": "f05",
-"count": 261,
+"count": 315,
 "archetype": "Alakazam",
-"team": "\u30ab\u30c9\u30e9\u30d0 Kadoraba"
+"team": "Heisei"
 },
 {
 "slug": "f06",
-"count": 229,
+"count": 230,
 "archetype": "Bellibolt",
 "team": "Pachuru"
 },
 {
 "slug": "f07",
-"count": 166,
+"count": 167,
 "archetype": "MegaLucario",
-"team": "parthenos"
+"team": "islet"
 },
 {
 "slug": "f08",
@@ -55,116 +55,1040 @@
 },
 {
 "slug": "f09",
-"count": 148,
+"count": 155,
+"archetype": "OTHER",
+"team": "yamy893"
+},
+{
+"slug": "f10",
+"count": 152,
 "archetype": "MegaStarmie",
 "team": "keidroid"
 },
 {
-"slug": "f10",
-"count": 134,
-"archetype": "Alakazam",
-"team": "MoMy"
-},
-{
 "slug": "f11",
-"count": 128,
+"count": 139,
 "archetype": "Alakazam",
 "team": "THIRD PTCG Club"
 },
 {
 "slug": "f12",
+"count": 135,
+"archetype": "Alakazam",
+"team": "Shiro Sugawa"
+},
+{
+"slug": "f13",
 "count": 128,
 "archetype": "Alakazam",
 "team": "nogu"
 },
 {
-"slug": "f13",
-"count": 105,
-"archetype": "MegaStarmie",
-"team": "tomatomato"
-},
-{
 "slug": "f14",
-"count": 97,
-"archetype": "Alakazam",
-"team": "THIRD PTCG Club"
-},
-{
-"slug": "f15",
-"count": 87,
-"archetype": "MegaLucario",
-"team": "shu"
-},
-{
-"slug": "f16",
-"count": 85,
+"count": 116,
 "archetype": "Trevenant",
 "team": "yomogi mochi"
 },
 {
+"slug": "f15",
+"count": 110,
+"archetype": "MegaStarmie",
+"team": "tomatomato"
+},
+{
+"slug": "f16",
+"count": 98,
+"archetype": "Alakazam",
+"team": "THIRD PTCG Club"
+},
+{
 "slug": "f17",
-"count": 85,
-"archetype": "Trevenant",
-"team": "The Debauchery Tea Party"
+"count": 97,
+"archetype": "OTHER",
+"team": "kashiwashira"
 },
 {
 "slug": "f18",
+"count": 88,
+"archetype": "MegaLucario",
+"team": "shu"
+},
+{
+"slug": "f19",
+"count": 87,
+"archetype": "Trevenant",
+"team": "Satoshi Haimura"
+},
+{
+"slug": "f20",
 "count": 78,
 "archetype": "MegaLucario",
 "team": "Blake Stagner"
 },
 {
-"slug": "f19",
+"slug": "f21",
 "count": 76,
 "archetype": "MegaLucario",
 "team": "tototo"
 },
 {
-"slug": "f20",
-"count": 65,
+"slug": "f22",
+"count": 76,
 "archetype": "OTHER",
-"team": "yamy893"
+"team": "The Debauchery Tea Party"
 },
 {
-"slug": "f21",
-"count": 53,
+"slug": "f23",
+"count": 66,
 "archetype": "Alakazam",
 "team": "Kohenyan"
 },
 {
-"slug": "f22",
+"slug": "f24",
 "count": 50,
 "archetype": "Alakazam",
-"team": "\u79c1\u5bc6\u9a6c\u8d5b"
+"team": "celefefwefwe1"
 },
 {
-"slug": "f23",
-"count": 47,
+"slug": "f25",
+"count": 42,
+"archetype": "Trevenant",
+"team": "suwat513"
+},
+{
+"slug": "f26",
+"count": 28,
 "archetype": "OTHER",
-"team": "kashiwashira"
+"team": "katsudon 421"
 },
 {
-"slug": "f24",
-"count": 24,
+"slug": "f27",
+"count": 27,
 "archetype": "Alakazam",
 "team": "Magnus Artero"
 },
 {
-"slug": "f25",
-"count": 24,
-"archetype": "Alakazam",
-"team": "\u3010\uff21\uff29\u3068\u5171\u306b\u3001\uff21\uff29\u3068\u6226\u3046\u3011"
+"slug": "f28",
+"count": 27,
+"archetype": "Trevenant",
+"team": "HayatoFujihara"
 },
 {
-"slug": "f26",
+"slug": "f29",
+"count": 27,
+"archetype": "Trevenant",
+"team": "yakiniku.nagoya"
+},
+{
+"slug": "f30",
+"count": 25,
+"archetype": "OTHER",
+"team": "noikaret"
+},
+{
+"slug": "f31",
+"count": 24,
+"archetype": "Alakazam",
+"team": "tubotu"
+},
+{
+"slug": "f32",
 "count": 22,
 "archetype": "OTHER",
 "team": "noikaret"
 },
 {
-"slug": "f27",
+"slug": "f33",
+"count": 22,
+"archetype": "Alakazam",
+"team": "UBI=ISHI"
+},
+{
+"slug": "f34",
+"count": 22,
+"archetype": "OTHER",
+"team": "The Debauchery Tea Party"
+},
+{
+"slug": "f35",
 "count": 21,
 "archetype": "MegaLucario",
 "team": "hukuda222"
+},
+{
+"slug": "f36",
+"count": 20,
+"archetype": "Alakazam",
+"team": "\u30ab\u30c9\u30e9\u30d0 Kadoraba"
+},
+{
+"slug": "f37",
+"count": 19,
+"archetype": "Alakazam",
+"team": "Powerful Hands Is All Yo"
+},
+{
+"slug": "f38",
+"count": 19,
+"archetype": "MegaStarmie",
+"team": "Naoto Sakai"
+},
+{
+"slug": "f39",
+"count": 16,
+"archetype": "Alakazam",
+"team": "kawachi"
+},
+{
+"slug": "f40",
+"count": 15,
+"archetype": "OTHER",
+"team": "vibechu"
+},
+{
+"slug": "f41",
+"count": 15,
+"archetype": "Crustle",
+"team": "SOUTA Sakurai"
+},
+{
+"slug": "f42",
+"count": 14,
+"archetype": "Crustle",
+"team": "Aaron Fletcher"
+},
+{
+"slug": "f43",
+"count": 14,
+"archetype": "Alakazam",
+"team": "kouki__k_4869"
+},
+{
+"slug": "f44",
+"count": 14,
+"archetype": "Trevenant",
+"team": "charmq"
+},
+{
+"slug": "f45",
+"count": 13,
+"archetype": "OTHER",
+"team": "charmq"
+},
+{
+"slug": "f46",
+"count": 13,
+"archetype": "Alakazam",
+"team": "\u3010\uff21\uff29\u3068\u5171\u306b\u3001\uff21\uff29\u3068\u6226\u3046\u3011tubotu"
+},
+{
+"slug": "f47",
+"count": 12,
+"archetype": "MegaLucario",
+"team": "dmiyabe"
+},
+{
+"slug": "f48",
+"count": 12,
+"archetype": "Alakazam",
+"team": "\u3010\uff21\uff29\u3068\u5171\u306b\u3001\uff21\uff29\u3068\u6226\u3046\u3011tubotu"
+},
+{
+"slug": "f49",
+"count": 12,
+"archetype": "Alakazam",
+"team": "\u307f\u305a\u3042\u3081"
+},
+{
+"slug": "f50",
+"count": 12,
+"archetype": "Alakazam",
+"team": "hikaru_ishihara46"
+},
+{
+"slug": "f51",
+"count": 11,
+"archetype": "Alakazam",
+"team": "FirstSS-Sub"
+},
+{
+"slug": "f52",
+"count": 10,
+"archetype": "MegaLucario",
+"team": "Stagapult"
+},
+{
+"slug": "f53",
+"count": 9,
+"archetype": "Crustle",
+"team": "Ehimen Nathaniel"
+},
+{
+"slug": "f54",
+"count": 9,
+"archetype": "Crustle",
+"team": "Tanupro"
+},
+{
+"slug": "f55",
+"count": 9,
+"archetype": "MegaLucario",
+"team": "tonghuicheng"
+},
+{
+"slug": "f56",
+"count": 9,
+"archetype": "Trevenant",
+"team": "Shunji Minode"
+},
+{
+"slug": "f57",
+"count": 9,
+"archetype": "Alakazam",
+"team": "Angus Chang"
+},
+{
+"slug": "f58",
+"count": 8,
+"archetype": "Alakazam",
+"team": "\u307f\u305a\u3042\u3081"
+},
+{
+"slug": "f59",
+"count": 8,
+"archetype": "Alakazam",
+"team": "\u30c1\u30fc\u30e0\u30ed\u30b9\u30ae\u30e9"
+},
+{
+"slug": "f60",
+"count": 7,
+"archetype": "OTHER",
+"team": "llkarill"
+},
+{
+"slug": "f61",
+"count": 7,
+"archetype": "Alakazam",
+"team": "Gotta Prompt \u2019Em All"
+},
+{
+"slug": "f62",
+"count": 7,
+"archetype": "Trevenant",
+"team": "Shun"
+},
+{
+"slug": "f63",
+"count": 7,
+"archetype": "OTHER",
+"team": "e-toppo"
+},
+{
+"slug": "f64",
+"count": 6,
+"archetype": "OTHER",
+"team": "hibi"
+},
+{
+"slug": "f65",
+"count": 6,
+"archetype": "Alakazam",
+"team": "chenyZan"
+},
+{
+"slug": "f66",
+"count": 6,
+"archetype": "MegaLucario",
+"team": "Akira-Ninth"
+},
+{
+"slug": "f67",
+"count": 6,
+"archetype": "OTHER",
+"team": "vibechu"
+},
+{
+"slug": "f68",
+"count": 6,
+"archetype": "Alakazam",
+"team": "N"
+},
+{
+"slug": "f69",
+"count": 6,
+"archetype": "OTHER",
+"team": "YukihiroMaeda"
+},
+{
+"slug": "f70",
+"count": 5,
+"archetype": "MegaLucario",
+"team": "sakimyto"
+},
+{
+"slug": "f71",
+"count": 5,
+"archetype": "MegaLucario",
+"team": "Mogja J"
+},
+{
+"slug": "f72",
+"count": 5,
+"archetype": "OTHER",
+"team": "YukihiroMaeda"
+},
+{
+"slug": "f73",
+"count": 5,
+"archetype": "Alakazam",
+"team": "Magnus Artero"
+},
+{
+"slug": "f74",
+"count": 5,
+"archetype": "Alakazam",
+"team": "Boss's Orders Are All Yo"
+},
+{
+"slug": "f75",
+"count": 4,
+"archetype": "OTHER",
+"team": "noikaret"
+},
+{
+"slug": "f76",
+"count": 4,
+"archetype": "Trevenant",
+"team": "puraza"
+},
+{
+"slug": "f77",
+"count": 4,
+"archetype": "Alakazam",
+"team": "Takuto Nishimine"
+},
+{
+"slug": "f78",
+"count": 4,
+"archetype": "Trevenant",
+"team": "H.Ito"
+},
+{
+"slug": "f79",
+"count": 4,
+"archetype": "Trevenant",
+"team": "Pixegami"
+},
+{
+"slug": "f80",
+"count": 3,
+"archetype": "OTHER",
+"team": "llkarill"
+},
+{
+"slug": "f81",
+"count": 3,
+"archetype": "Crustle",
+"team": "Team Rocket"
+},
+{
+"slug": "f82",
+"count": 3,
+"archetype": "Alakazam",
+"team": "keisuketsukagoshi"
+},
+{
+"slug": "f83",
+"count": 3,
+"archetype": "OTHER",
+"team": "Anthony Ellis "
+},
+{
+"slug": "f84",
+"count": 3,
+"archetype": "OTHER",
+"team": "takanori-suzuki-desu"
+},
+{
+"slug": "f85",
+"count": 3,
+"archetype": "OTHER",
+"team": "Sota Uchiyama"
+},
+{
+"slug": "f86",
+"count": 3,
+"archetype": "Alakazam",
+"team": "\u3059\u30fc\u3071\u30fc\u3072\u3068\u3067"
+},
+{
+"slug": "f87",
+"count": 3,
+"archetype": "Crustle",
+"team": "GarlicToday"
+},
+{
+"slug": "f88",
+"count": 3,
+"archetype": "Alakazam",
+"team": "Kyogre"
+},
+{
+"slug": "f89",
+"count": 3,
+"archetype": "MegaLucario",
+"team": "Angus Chang"
+},
+{
+"slug": "f90",
+"count": 3,
+"archetype": "MegaLucario",
+"team": "Ayodeji"
+},
+{
+"slug": "f91",
+"count": 3,
+"archetype": "OTHER",
+"team": "kashiwashira"
+},
+{
+"slug": "f92",
+"count": 3,
+"archetype": "Alakazam",
+"team": "midnq"
+},
+{
+"slug": "f93",
+"count": 3,
+"archetype": "Alakazam",
+"team": "kipeo22"
+},
+{
+"slug": "f94",
+"count": 3,
+"archetype": "Alakazam",
+"team": "\u307f\u305a\u3042\u3081"
+},
+{
+"slug": "f95",
+"count": 3,
+"archetype": "Alakazam",
+"team": "Pixegami"
+},
+{
+"slug": "f96",
+"count": 3,
+"archetype": "MegaLucario",
+"team": "rikakei_no_otoko"
+},
+{
+"slug": "f97",
+"count": 3,
+"archetype": "Trevenant",
+"team": "YanXiaohan666"
+},
+{
+"slug": "f98",
+"count": 3,
+"archetype": "Alakazam",
+"team": "Michael Pershin"
+},
+{
+"slug": "f99",
+"count": 3,
+"archetype": "OTHER",
+"team": "aca-ta"
+},
+{
+"slug": "f100",
+"count": 3,
+"archetype": "Trevenant",
+"team": "THIRD PTCG Club"
+},
+{
+"slug": "f101",
+"count": 3,
+"archetype": "Alakazam",
+"team": "hikaru_ishihara46"
+},
+{
+"slug": "f102",
+"count": 3,
+"archetype": "Trevenant",
+"team": "tellurium_rrr"
+},
+{
+"slug": "f103",
+"count": 3,
+"archetype": "Trevenant",
+"team": "foo_foo"
+},
+{
+"slug": "f104",
+"count": 3,
+"archetype": "Alakazam",
+"team": "\u30cc\u30e1\u30eb\u30b4\u30f3ex"
+},
+{
+"slug": "f105",
+"count": 2,
+"archetype": "Alakazam",
+"team": "Zscorpio"
+},
+{
+"slug": "f106",
+"count": 2,
+"archetype": "Alakazam",
+"team": "\u3010\uff21\uff29\u3068\u5171\u306b\u3001\uff21\uff29\u3068\u6226\u3046\u3011ZENONZARD"
+},
+{
+"slug": "f107",
+"count": 2,
+"archetype": "Crustle",
+"team": "karacoro"
+},
+{
+"slug": "f108",
+"count": 2,
+"archetype": "Crustle",
+"team": "AM"
+},
+{
+"slug": "f109",
+"count": 2,
+"archetype": "Crustle",
+"team": "strayuru"
+},
+{
+"slug": "f110",
+"count": 2,
+"archetype": "Alakazam",
+"team": "\u30c8\u30b2\u30a2\u30ea\u30c8\u30b2\u30ca\u30b7\u30c8\u30b2\u30c8\u30b2"
+},
+{
+"slug": "f111",
+"count": 2,
+"archetype": "MegaLucario",
+"team": "\u6728\u6751\u592a\u967d"
+},
+{
+"slug": "f112",
+"count": 2,
+"archetype": "MegaLucario",
+"team": "Akira-Ninth"
+},
+{
+"slug": "f113",
+"count": 2,
+"archetype": "MegaLucario",
+"team": "Galza98"
+},
+{
+"slug": "f114",
+"count": 2,
+"archetype": "MegaLucario",
+"team": "Praxel"
+},
+{
+"slug": "f115",
+"count": 2,
+"archetype": "MegaLucario",
+"team": "Akira-Ninth"
+},
+{
+"slug": "f116",
+"count": 2,
+"archetype": "Trevenant",
+"team": "SantaClaws"
+},
+{
+"slug": "f117",
+"count": 2,
+"archetype": "Trevenant",
+"team": "HiroyukiSasaki"
+},
+{
+"slug": "f118",
+"count": 2,
+"archetype": "OTHER",
+"team": "monnosuke"
+},
+{
+"slug": "f119",
+"count": 1,
+"archetype": "OTHER",
+"team": "Gumi Bera"
+},
+{
+"slug": "f120",
+"count": 1,
+"archetype": "OTHER",
+"team": "Reinhard"
+},
+{
+"slug": "f121",
+"count": 1,
+"archetype": "Crustle",
+"team": "Map1e"
+},
+{
+"slug": "f122",
+"count": 1,
+"archetype": "OTHER",
+"team": "Iwata Naoki (\u3044\u308f\u305f\u3093)"
+},
+{
+"slug": "f123",
+"count": 1,
+"archetype": "Crustle",
+"team": "Brian Yong"
+},
+{
+"slug": "f124",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "hattori88"
+},
+{
+"slug": "f125",
+"count": 1,
+"archetype": "OTHER",
+"team": "akay"
+},
+{
+"slug": "f126",
+"count": 1,
+"archetype": "Crustle",
+"team": "fujiborozoukin"
+},
+{
+"slug": "f127",
+"count": 1,
+"archetype": "Crustle",
+"team": "trisector"
+},
+{
+"slug": "f128",
+"count": 1,
+"archetype": "Crustle",
+"team": "nakashima723"
+},
+{
+"slug": "f129",
+"count": 1,
+"archetype": "Dragapult",
+"team": "Mindnightdestroy"
+},
+{
+"slug": "f130",
+"count": 1,
+"archetype": "Crustle",
+"team": "KTG"
+},
+{
+"slug": "f131",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "Alyce Miki"
+},
+{
+"slug": "f132",
+"count": 1,
+"archetype": "Crustle",
+"team": "Sholtis Labs"
+},
+{
+"slug": "f133",
+"count": 1,
+"archetype": "OTHER",
+"team": "Mysterious Rock Inn"
+},
+{
+"slug": "f134",
+"count": 1,
+"archetype": "OTHER",
+"team": "GoodWill"
+},
+{
+"slug": "f135",
+"count": 1,
+"archetype": "Dragapult",
+"team": "Lleyaghm"
+},
+{
+"slug": "f136",
+"count": 1,
+"archetype": "OTHER",
+"team": "hikarimaru"
+},
+{
+"slug": "f137",
+"count": 1,
+"archetype": "OTHER",
+"team": "umsyspokeka"
+},
+{
+"slug": "f138",
+"count": 1,
+"archetype": "Crustle",
+"team": "kento kodama"
+},
+{
+"slug": "f139",
+"count": 1,
+"archetype": "Crustle",
+"team": "Yamadai"
+},
+{
+"slug": "f140",
+"count": 1,
+"archetype": "Crustle",
+"team": "dafujii"
+},
+{
+"slug": "f141",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "sakimyto"
+},
+{
+"slug": "f142",
+"count": 1,
+"archetype": "OTHER",
+"team": "Kakeru"
+},
+{
+"slug": "f143",
+"count": 1,
+"archetype": "OTHER",
+"team": "Takamasa Ueno"
+},
+{
+"slug": "f144",
+"count": 1,
+"archetype": "Crustle",
+"team": "itohudo"
+},
+{
+"slug": "f145",
+"count": 1,
+"archetype": "Crustle",
+"team": "kuu\ud83c\udf63"
+},
+{
+"slug": "f146",
+"count": 1,
+"archetype": "OTHER",
+"team": "openrasmus"
+},
+{
+"slug": "f147",
+"count": 1,
+"archetype": "OTHER",
+"team": "Shunji Minode"
+},
+{
+"slug": "f148",
+"count": 1,
+"archetype": "Dragapult",
+"team": "kenn"
+},
+{
+"slug": "f149",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "Jagannath Athmaraman"
+},
+{
+"slug": "f150",
+"count": 1,
+"archetype": "Crustle",
+"team": "CPAO"
+},
+{
+"slug": "f151",
+"count": 1,
+"archetype": "Crustle",
+"team": "mi22mi"
+},
+{
+"slug": "f152",
+"count": 1,
+"archetype": "Alakazam",
+"team": "0xWhalet"
+},
+{
+"slug": "f153",
+"count": 1,
+"archetype": "Bellibolt",
+"team": "Tsukuru"
+},
+{
+"slug": "f154",
+"count": 1,
+"archetype": "Crustle",
+"team": "HOMEWORK_L"
+},
+{
+"slug": "f155",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "Dinesh kumar Thiyagaraja"
+},
+{
+"slug": "f156",
+"count": 1,
+"archetype": "OTHER",
+"team": "D\u0168NG H\u1ed2 ANH"
+},
+{
+"slug": "f157",
+"count": 1,
+"archetype": "Crustle",
+"team": "YukihiroMaeda"
+},
+{
+"slug": "f158",
+"count": 1,
+"archetype": "OTHER",
+"team": "yamato498"
+},
+{
+"slug": "f159",
+"count": 1,
+"archetype": "Crustle",
+"team": "yakiniku.nagoya"
+},
+{
+"slug": "f160",
+"count": 1,
+"archetype": "OTHER",
+"team": "ktk"
+},
+{
+"slug": "f161",
+"count": 1,
+"archetype": "OTHER",
+"team": "Hale Obernolte"
+},
+{
+"slug": "f162",
+"count": 1,
+"archetype": "Alakazam",
+"team": "kawachi"
+},
+{
+"slug": "f163",
+"count": 1,
+"archetype": "Crustle",
+"team": "Dick Jessen William"
+},
+{
+"slug": "f164",
+"count": 1,
+"archetype": "OTHER",
+"team": "YukihiroMaeda"
+},
+{
+"slug": "f165",
+"count": 1,
+"archetype": "Crustle",
+"team": "Aiagate"
+},
+{
+"slug": "f166",
+"count": 1,
+"archetype": "OTHER",
+"team": "kashiwashira"
+},
+{
+"slug": "f167",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "misaki"
+},
+{
+"slug": "f168",
+"count": 1,
+"archetype": "MegaStarmie",
+"team": "pokeka_ryo"
+},
+{
+"slug": "f169",
+"count": 1,
+"archetype": "Alakazam",
+"team": "\u592f"
+},
+{
+"slug": "f170",
+"count": 1,
+"archetype": "Alakazam",
+"team": "Paras Sharma"
+},
+{
+"slug": "f171",
+"count": 1,
+"archetype": "Trevenant",
+"team": "THIRD PTCG Club"
+},
+{
+"slug": "f172",
+"count": 1,
+"archetype": "Trevenant",
+"team": "Shunji Minode"
+},
+{
+"slug": "f173",
+"count": 1,
+"archetype": "Alakazam",
+"team": "yamamekko"
+},
+{
+"slug": "f174",
+"count": 1,
+"archetype": "Alakazam",
+"team": "Magnus Artero"
+},
+{
+"slug": "f175",
+"count": 1,
+"archetype": "Trevenant",
+"team": "yomogi mochi"
+},
+{
+"slug": "f176",
+"count": 1,
+"archetype": "OTHER",
+"team": "aca-ta"
+},
+{
+"slug": "f177",
+"count": 1,
+"archetype": "MegaLucario",
+"team": "takuyay"
+},
+{
+"slug": "f178",
+"count": 1,
+"archetype": "Alakazam",
+"team": "\u307f\u305a\u3042\u3081"
+},
+{
+"slug": "f179",
+"count": 1,
+"archetype": "Alakazam",
+"team": "FirstSS-Sub"
+},
+{
+"slug": "f180",
+"count": 1,
+"archetype": "Trevenant",
+"team": "Hiroki Maruo"
+},
+{
+"slug": "f181",
+"count": 1,
+"archetype": "Alakazam",
+"team": "\u307f\u305a\u3042\u3081"
 }
 ]
