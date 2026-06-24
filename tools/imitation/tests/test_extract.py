@@ -1,11 +1,14 @@
 # tools/imitation/tests/test_extract.py
-import json, glob
 from tools.imitation.extract_decisions import iter_decisions, deck_sig_of
+from tools.replays_db import iter_replays
 
 def test_iter_decisions_yields_valid_records():
-    f = sorted(glob.glob("json/*.json"))[0]
-    g = json.load(open(f))
-    recs = list(iter_decisions(g))
+    # first replay that actually has a learnable decision
+    recs = []
+    for _ep, g in iter_replays():
+        recs = list(iter_decisions(g))
+        if recs:
+            break
     assert recs, "expected at least one decision"
     r = recs[0]
     assert set(r) >= {"deck_sig", "player", "reward", "context", "state", "options", "chosen"}

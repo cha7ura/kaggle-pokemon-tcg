@@ -1,11 +1,10 @@
 # tools/imitation/tests/test_features.py
-import json, glob, math
+import math, itertools
 from tools.imitation.features import state_features, option_features, STATE_DIM, OPTION_DIM
+from tools.replays_db import iter_replays
 
 def _a_decision():
-    for f in sorted(glob.glob("json/*.json"))[:50]:
-        with open(f) as fh:
-            d = json.load(fh)
+    for _ep, d in itertools.islice(iter_replays(), 50):
         for s in d["steps"]:
             for seat in (0, 1):
                 obs = s[seat].get("observation", {})

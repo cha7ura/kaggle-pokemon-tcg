@@ -12,3 +12,5 @@ json/
 deck.csv
 json_ours/
 tools/imitation/data/
+replays.sqlite
+.fetch_tmp/

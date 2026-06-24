@@ -4,6 +4,7 @@ action is a list of small indices into option (the 60-card deck action is natura
 its entries are card ids >> n_options). STDLIB ONLY."""
 import json, glob, os, sys, collections, hashlib
 from tools.imitation.features import state_features, option_features
+from tools.replays_db import iter_replays
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA = os.path.join(os.path.dirname(__file__), "data")
@@ -78,12 +79,8 @@ def main():
     files = {}
     meta = collections.defaultdict(lambda: {"player": None, "games": set(), "decisions": 0,
                                             "deck": None})
-    for path in glob.glob(f"{ROOT}/json/*.json"):
-        try:
-            g = json.load(open(path))
-        except Exception:
-            continue
-        gid = g.get("info", {}).get("EpisodeId", path)
+    for ep, g in iter_replays():
+        gid = g.get("info", {}).get("EpisodeId", ep)
         seen_sig = set()
         for r in iter_decisions(g):
             sig = r["deck_sig"]

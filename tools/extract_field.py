@@ -7,6 +7,8 @@ manifest decks/field/weights.json = [{slug, count, archetype, sample_team}].
   python tools/extract_field.py 20         # keep only decks seen >= 20x (trim the long tail)
 """
 import json, csv, glob, os, sys, collections
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tools.replays_db import iter_replays
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIELD = f"{ROOT}/autoresearch/decks/field"
@@ -43,9 +45,7 @@ def main():
     os.makedirs(FIELD, exist_ok=True)
     seen = collections.Counter()        # canonical-deck-tuple -> count
     sample_team = {}
-    for f in glob.glob(f"{ROOT}/json/*.json"):
-        try: d = json.load(open(f))
-        except: continue
+    for ep, d in iter_replays():
         teams = d.get("info", {}).get("TeamNames", ["?", "?"])
         for p in (0, 1):
             dk = deck_of(d.get("steps", []), p)
