@@ -129,3 +129,12 @@ Trevenant (us) league win rate vs real ladder:
 Verdict: league machinery validated (aggregate + Alakazam dead-on, oracle realistic where data thick).
 Dragapult cell still inverted -> imitation Dragapult pilot too weak (thin policy from few games).
 Fix = more Dragapult replays (fetch running) -> retrain stronger Dragapult policy. Not a harness bug.
+
+## 2026-06-24 — Deck adopt-the-best check: NO upgrade exists
+Full-182 league ranking was typh-contaminated (f44/f29 looked top-tier, actually below ours under equal pilot).
+Clean A/B, all typh-piloted (deck=only variable):
+- Trevenant-mirror subset: f28 0.585 > f03(ours) 0.522  (+0.06 -> looked like an upgrade)
+- FIELD-WEIGHTED vs top-20 common field, N=100: f03 0.742, f28 0.736 (delta -0.006)
+Verdict: f28's edge was a mirror artifact; field-weighted our f03 is equal/better. No adopt-the-best deck.
+Our f03 is on the field-best frontier. Improving requires EVOLUTION (GA, fitness=field-weighted league wr),
+targeting the structural Dragapult 0.32 hole that every Trevenant list shares.
