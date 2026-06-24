@@ -37,13 +37,17 @@ def _sig(deck):
     return "_".join(str(x) for x in sorted(deck))
 
 
-def build_roster(slugs):
-    """[{slug, deck, policy(tree|None), pilot}] for the given field slugs."""
+def build_roster(slugs, force_pilot=None):
+    """[{slug, deck, policy(tree|None), pilot}] for the given field slugs.
+    force_pilot='typh' -> ignore learned policies (clean deck A/B: pilot held constant)."""
     roster = []
     for slug in slugs:
         deck = _deck_of(slug)
-        kind, polpath = opponent_pilot(_sig(deck))
-        tree = json.load(open(polpath)) if kind == "imitation" else None
+        if force_pilot == "typh":
+            tree = None
+        else:
+            kind, polpath = opponent_pilot(_sig(deck))
+            tree = json.load(open(polpath)) if kind == "imitation" else None
         roster.append({"slug": slug, "deck": deck, "policy": tree,
                        "pilot": "imitation" if tree else "typh"})
     return roster
@@ -88,16 +92,22 @@ def _run_shard(rpath, games, shard, nshards, batch):
     return total
 
 
-def roundrobin(slugs=None, games=30, workers=6, batch=None):
+def _all_field_slugs():
+    return sorted(os.path.splitext(os.path.basename(f))[0]
+                  for f in glob.glob(f"{FIELD_DIR}/f*.csv"))
+
+
+def roundrobin(slugs=None, games=30, workers=6, batch=None, force_pilot=None):
     """Round-robin across `workers` parallel docker shards; store every game; return win matrix.
-    Default roster = all field decks that have a learned policy."""
+    Default roster = all field decks that have a learned policy.
+    force_pilot='typh' holds the pilot constant for a clean deck A/B."""
     slugs = slugs or _learned_slugs()
     if len(slugs) < 2:
         raise SystemExit(f"need >=2 decks with policies; got {len(slugs)} ({slugs})")
     batch = batch or f"rr-{int(time.time())}"
     npairs = len(slugs) * (len(slugs) - 1) // 2
     workers = max(1, min(workers, npairs))
-    json.dump(build_roster(slugs), open(_roster_path(), "w"))
+    json.dump(build_roster(slugs, force_pilot), open(_roster_path(), "w"))
     print(f"[{batch}] {len(slugs)} decks, {npairs} pairings x{games} = {npairs*games} games "
           f"across {workers} shards", flush=True)
     t0 = time.time()
