@@ -40,8 +40,11 @@ def pull(ep, day, source):
     p = f"{TMP}/{ep}.json"
     for delta in (0, -1, 1):
         d = day + datetime.timedelta(days=delta)
-        subprocess.run(["kaggle", "datasets", "download", f"{DS}{d}", "-f", f"{ep}.json", "-p", TMP],
-                       capture_output=True, text=True, timeout=120)
+        try:
+            subprocess.run(["kaggle", "datasets", "download", f"{DS}{d}", "-f", f"{ep}.json", "-p", TMP],
+                           capture_output=True, text=True, timeout=120)
+        except subprocess.TimeoutExpired:
+            continue  # one slow file must not abort the whole crawl
         z = f"{p}.zip"
         if os.path.exists(z):  # CLI sometimes leaves a .zip
             subprocess.run(["unzip", "-o", z, "-d", TMP], capture_output=True); os.remove(z)
@@ -66,9 +69,11 @@ def main():
         for e in enum_safe(sid).get("episodes", []):
             if pull(e["id"], day_of(e["createTime"]), "ours"): got += 1
     print(f"ours +{got} (total {_count('ours')})", flush=True)
-    # LEADER games (top-Elo)
+    # LEADER games (top-Elo). Storage is cheap (db), so crawl wide: override the
+    # submission-seed cap via argv, e.g. `python tools/fetch_dataset.py 400`.
+    max_subs = int(sys.argv[1]) if len(sys.argv) > 1 else 400
     ep_day, seen, q = {}, set(), list(TOP_SEEDS)
-    while q and len(seen) < 40:
+    while q and len(seen) < max_subs:
         s = q.pop(0)
         if s in seen: continue
         seen.add(s)
