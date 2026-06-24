@@ -6,9 +6,9 @@ STDLIB + cg only. Reuses eval.play_one (no edit to the fixed harness).
   python league_play.py roster.json --games 30      # roster = [{slug,deck,policy,pilot}]
 """
 import json, sys, argparse
-from eval import play_one  # the frozen harness; we only reuse its single-game runner
-
-sys.path.insert(0, "/app")  # tools.imitation.* for the imitation pilot path
+sys.path.insert(0, "/app")             # tools.imitation.*
+sys.path.insert(0, "/app/autoresearch")  # eval, agent_typh (script-path run won't add cwd)
+from eval import play_one              # the frozen harness; we only reuse its single-game runner
 from tools.imitation.features import state_features, option_features
 from tools.imitation.policy import pick
 
@@ -43,13 +43,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("roster")
     ap.add_argument("--games", type=int, default=30)
+    ap.add_argument("--shard", type=int, default=0)     # this worker's index
+    ap.add_argument("--nshards", type=int, default=1)   # total workers; play pairings where idx%n==shard
     args = ap.parse_args()
     roster = json.load(open(args.roster))
     for r in roster:
         r["_agent"] = make_pilot(r["deck"], r.get("policy"))
 
+    pair_idx = -1
     for i in range(len(roster)):
         for k in range(i + 1, len(roster)):
+            pair_idx += 1
+            if pair_idx % args.nshards != args.shard:
+                continue
             A, B = roster[i], roster[k]
             for g in range(args.games):
                 if g % 2 == 0:  # A is seat 0

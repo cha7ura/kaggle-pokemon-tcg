@@ -9,9 +9,12 @@ learned policy fall back to the generic typh pilot.
 Live games need docker up (engine is linux/amd64 only). opponent_pilot() routing is pure and unit-
 tested without docker.
 """
-import os, json, glob, subprocess, sys, time
+import os, json, glob, subprocess, sys, time, threading
+from concurrent.futures import ThreadPoolExecutor
 from tools.imitation.extract_decisions import sig_to_fname
 from tools import replays_db
+
+_DBLOCK = threading.Lock()  # sqlite single-writer; serialize stores across shard threads
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 POL = os.path.join(os.path.dirname(__file__), "policies")
@@ -56,27 +59,16 @@ def _learned_slugs():
     return out
 
 
-def roundrobin(slugs=None, games=30, batch=None, store=True):
-    """Run the round-robin in docker, store every game, return the win matrix.
-    Default roster = all field decks that have a learned policy."""
-    slugs = slugs or _learned_slugs()
-    if len(slugs) < 2:
-        raise SystemExit(f"need >=2 decks with policies; got {len(slugs)} ({slugs})")
-    batch = batch or f"rr-{int(time.time())}"
-    roster = build_roster(slugs)
-    os.makedirs(f"{ROOT}/.fetch_tmp", exist_ok=True)
-    rpath = f"{ROOT}/.fetch_tmp/roster.json"
-    json.dump(roster, open(rpath, "w"))
-    print(f"[{batch}] {len(slugs)} decks, {games} games/pairing "
-          f"= {len(slugs)*(len(slugs)-1)//2*games} games", flush=True)
+def _run_shard(rpath, games, shard, nshards, batch):
+    """One docker container playing pairings where pair_idx % nshards == shard. Streams to db."""
     proc = subprocess.Popen(
         ["docker", "run", "--rm", "--platform", "linux/amd64", "-v", f"{ROOT}:/app",
          "-w", "/app/autoresearch", "-e", "PYTHONPATH=/app/sdk", "python:3.11-slim",
-         "python", "/app/tools/imitation/league_play.py",
-         "/app/.fetch_tmp/roster.json", "--games", str(games)],
+         "python", "/app/tools/imitation/league_play.py", "/app/.fetch_tmp/roster.json",
+         "--games", str(games), "--shard", str(shard), "--nshards", str(nshards)],
         stdout=subprocess.PIPE, text=True)
-    rows, buf = [], []
-    for line in proc.stdout:                       # stream per-game results
+    buf, total = [], 0
+    for line in proc.stdout:
         line = line.strip()
         if not line:
             continue
@@ -84,13 +76,43 @@ def roundrobin(slugs=None, games=30, batch=None, store=True):
             buf.append(json.loads(line))
         except Exception:
             continue
-        if store and len(buf) >= 200:
-            replays_db.store_league_games(buf, batch); rows += buf; buf = []
+        if len(buf) >= 200:
+            with _DBLOCK:
+                replays_db.store_league_games(buf, batch)
+            total += len(buf); buf = []
     proc.wait()
-    if store and buf:
-        replays_db.store_league_games(buf, batch); rows += buf
-    print(f"[{batch}] stored {len(rows)} games", flush=True)
+    if buf:
+        with _DBLOCK:
+            replays_db.store_league_games(buf, batch)
+        total += len(buf)
+    return total
+
+
+def roundrobin(slugs=None, games=30, workers=6, batch=None):
+    """Round-robin across `workers` parallel docker shards; store every game; return win matrix.
+    Default roster = all field decks that have a learned policy."""
+    slugs = slugs or _learned_slugs()
+    if len(slugs) < 2:
+        raise SystemExit(f"need >=2 decks with policies; got {len(slugs)} ({slugs})")
+    batch = batch or f"rr-{int(time.time())}"
+    npairs = len(slugs) * (len(slugs) - 1) // 2
+    workers = max(1, min(workers, npairs))
+    json.dump(build_roster(slugs), open(_roster_path(), "w"))
+    print(f"[{batch}] {len(slugs)} decks, {npairs} pairings x{games} = {npairs*games} games "
+          f"across {workers} shards", flush=True)
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(_run_shard, _roster_path(), games, s, workers, batch)
+                for s in range(workers)]
+        total = sum(f.result() for f in futs)
+    dt = time.time() - t0
+    print(f"[{batch}] stored {total} games in {dt:.0f}s ({total/dt:.1f} games/s)", flush=True)
     return batch, replays_db.league_matrix(batch)
+
+
+def _roster_path():
+    os.makedirs(f"{ROOT}/.fetch_tmp", exist_ok=True)
+    return f"{ROOT}/.fetch_tmp/roster.json"
 
 
 def print_matrix(matrix):
@@ -106,8 +128,12 @@ def main():
     cmd = argv[0] if argv else "roundrobin"
     if cmd == "roundrobin":
         games = int(argv[1]) if len(argv) > 1 else 30
-        slugs = argv[2:] or None
-        batch, m = roundrobin(slugs, games)
+        rest = argv[2:]
+        workers = 6
+        if "--workers" in rest:
+            i = rest.index("--workers"); workers = int(rest[i + 1]); rest = rest[:i] + rest[i + 2:]
+        slugs = rest or None
+        batch, m = roundrobin(slugs, games, workers=workers)
         print_matrix(m)
     else:
         print(__doc__)
