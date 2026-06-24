@@ -138,3 +138,14 @@ Clean A/B, all typh-piloted (deck=only variable):
 Verdict: f28's edge was a mirror artifact; field-weighted our f03 is equal/better. No adopt-the-best deck.
 Our f03 is on the field-best frontier. Improving requires EVOLUTION (GA, fitness=field-weighted league wr),
 targeting the structural Dragapult 0.32 hole that every Trevenant list shares.
+
+## 2026-06-24 — Coherent GA winner: trev_ga1 (Trevenant consistency tune)
+Coherent single-archetype GA (15 gens), seeds=Trevenant field decks, pool=42 Trevenant cards.
+6-card diff vs our f03: +3 Prism Energy, +2 Poke Pad, +1 Buddy-Buddy Poffin; -1 Boss's Orders,
+-1 Lillie's, -1 Pokegear, -1 Hop's Trevenant, -2 Cramorant. (consistency over situational cards)
+Validation (challenge_field, candidate typh):
+- vs typh field (N=60, top-30):     ga 0.768 / f03 0.688  delta +0.080; worst 0.350 vs 0.167
+- vs LEARNED-policy field (N=40,26): ga 0.820 / f03 0.762  delta +0.057; worst 0.525 vs 0.375
+ga_best has NO losing matchup (worst 0.525>0.5). Edge consistent across both pilot regimes ->
+real, not a typh artifact. Saved decks/trev_ga1.csv. Candidate for live-ladder A/B vs f03.
+Caveat: sim absolutes != ladder; relative signal strong. Ladder is the only final judge.

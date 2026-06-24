@@ -125,13 +125,15 @@ def _roster_path():
     return f"{ROOT}/.fetch_tmp/roster.json"
 
 
-def challenge_field(cand_deck, opp_slugs=None, games=20, workers=8, cand_label="cand"):
-    """Gauntlet a candidate deck vs the field (typh both sides -> isolate the deck). Does NOT
-    store games (GA probes are ephemeral). Returns {fw, worst, raw, per} field-weighted by real count."""
+def challenge_field(cand_deck, opp_slugs=None, games=20, workers=8, cand_label="cand", opp_pilot="typh"):
+    """Gauntlet a candidate deck vs the field. opp_pilot='typh' isolates the deck (deck A/B);
+    opp_pilot=None lets opponents use their LEARNED policies (realistic, non-gameable gate).
+    The candidate is always typh (a fresh deck has no policy). Ephemeral (no db store).
+    Returns {fw, worst, raw, per} field-weighted by real count."""
     import collections
     opp_slugs = opp_slugs or _all_field_slugs()
     roster = [{"slug": cand_label, "deck": list(cand_deck), "policy": None, "pilot": "typh"}]
-    roster += build_roster(opp_slugs, force_pilot="typh")
+    roster += build_roster(opp_slugs, force_pilot=opp_pilot)
     json.dump(roster, open(_roster_path(), "w"))
     cnt = {fn: c for fn, c in replays_db._connect().execute("SELECT fname,count FROM decks")}
     W = collections.defaultdict(float); N = collections.defaultdict(int)
