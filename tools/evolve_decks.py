@@ -1,26 +1,32 @@
-"""Evolutionary deck search (GA) with self-play fitness. Seed from strong meta decks, mutate
-coherently (swap/adjust within a sane card pool, max-4 + 60-card legal), fitness = gauntlet
-win-rate vs the meta field (typhlosion pilot both sides -> isolates DECK). Keep top, crossover +
-mutate, iterate. Coherence is enforced by fitness (incoherent mutants play badly -> die), not repair.
-Local = filter; ladder = judge. Run on host (docker per matchup).
+"""Evolutionary deck search (GA). Seed from the real meta (most common field decks), mutate
+coherently (swap/adjust within a card pool drawn from the field, max-4 + 60-card legal), fitness =
+field-weighted win-rate vs the REAL 182-deck field via the imitation-league harness (typh pilot
+both sides -> isolates DECK, not pilot), MINUS a fragility penalty on the worst matchup (drives
+evolution to fix our structural Dragapult hole). Coherence enforced by fitness (junk mutants lose ->
+die), not repair. Local = filter; ladder = judge. Run on host (docker).
 
-  python tools/evolve_decks.py <generations> <pop> <games>
+  python tools/evolve_decks.py <generations> <pop> <games> [n_field_opponents]
 """
-import csv, os, sys, subprocess, random
+import csv, os, sys, random, sqlite3
 from collections import Counter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)                         # import the tools package when run as a script
+from tools.imitation.league import challenge_field, _deck_of
 DECKS = f"{ROOT}/autoresearch/decks"
 rows = list(csv.DictReader(open(f"{ROOT}/autoresearch/cards_full.csv")))
 R = {int(r["cardId"]): r for r in rows}
 BASIC_ENERGY = {2, 3, 4, 5, 6, 7, 8, 9}          # unlimited copies allowed
-SEED = ["trevenant", "alakazam_top", "crustle", "lucario_meta"]
-META = ["alakazam_top", "trevenant", "crustle", "lucario_meta"]
-# real meta-share (from replays) -> field-weighted fitness (Crustle is ~1%, Lucario ~29%)
-FIELD_W = {"alakazam_top": 0.40, "lucario_meta": 0.33, "trevenant": 0.25, "crustle": 0.02}
-FRAGILITY = 0.35   # penalty per point a worst-matchup falls below 0.5 (AlphaStar anti-fragility / PFSP spirit)
-# deterministic-ish randomness varied by call (Math.random unavailable note is for workflows; here ok)
+FRAGILITY = 0.35   # penalty per point a worst-matchup falls below 0.5 (anti-fragility / PFSP spirit)
 RNG = random.Random(1234)
+
+# real meta from the replay db: seed from the most common decks, score vs the top-weight field
+_db = sqlite3.connect(f"{ROOT}/replays.sqlite")
+_ranked = [fn for fn, c in _db.execute("SELECT fname,count FROM decks ORDER BY count DESC")]
+_arch = {fn: a for fn, a in _db.execute("SELECT fname,archetype FROM decks")}
+SEED_SLUGS = _ranked[:6]                          # evolve from the actual common meta
+N_FIELD = int(sys.argv[4]) if len(sys.argv) > 4 else 30
+FIELD_SLUGS = _ranked[:N_FIELD]                   # fitness opponents (weight concentrated in the head)
 
 
 def load(slug):
@@ -31,13 +37,10 @@ def save(deck, slug):
     open(f"{DECKS}/{slug}.csv", "w").write("\n".join(map(str, deck)) + "\n")
 
 
-# card pool to mutate WITHIN: every card appearing in the seed decks + gen candidates (sane, coherent)
+# card pool to mutate WITHIN: every card across the top ~40 field decks (coherent, on-meta)
 POOL = set()
-for s in SEED:
-    POOL |= set(load(s))
-for f in os.listdir(DECKS):
-    if f.startswith("gen_"):
-        POOL |= set(load(f[:-4]))
+for s in _ranked[:40]:
+    POOL |= set(_deck_of(s))
 POOL = sorted(POOL)
 
 
@@ -83,60 +86,49 @@ def crossover(a, b):
     return fixed[:60]
 
 
-def fitness(slug, games):
-    scores = []
-    for opp in META:
-        out = subprocess.run(
-            ["docker", "run", "--rm", "--platform", "linux/amd64", "-v", f"{ROOT}:/app",
-             "-w", "/app/autoresearch", "-e", "PYTHONPATH=/app/sdk", "python:3.11-slim",
-             "python", "eval.py", "--challenger", "agent_typh.py", "--champion", "agent_typh.py",
-             "--deck", f"decks/{slug}.csv", "--deck-champion", f"decks/{opp}.csv",
-             "--games", str(games)],
-            capture_output=True, text=True, timeout=900).stdout
-        sc = 0.0
-        for ln in out.splitlines():
-            if '"score"' in ln:
-                try: sc = float(ln.split(":")[1].strip().rstrip(",")); break
-                except: pass
-        scores.append(sc)
-    # field-weighted winrate MINUS fragility penalty (worst matchup below 0.5) = robust objective
-    wsum = sum(FIELD_W[o] for o in META)
-    fw = sum(FIELD_W[o] * s for o, s in zip(META, scores)) / wsum
-    worst = min(scores)
-    fit = fw - FRAGILITY * max(0.0, 0.5 - worst)
-    return fit, scores
+def fitness(deck, games):
+    """Field-weighted win rate vs the real field MINUS fragility penalty on the worst matchup."""
+    r = challenge_field(deck, opp_slugs=FIELD_SLUGS, games=games, cand_label="ga_cand")
+    fit = r["fw"] - FRAGILITY * max(0.0, 0.5 - r["worst"])
+    return fit, r
 
 
 def main():
     gens = int(sys.argv[1]) if len(sys.argv) > 1 else 12
     pop_n = int(sys.argv[2]) if len(sys.argv) > 2 else 12
-    games = int(sys.argv[3]) if len(sys.argv) > 3 else 30
-    print(f"GA deck search: {gens} gens x {pop_n} pop x {games} games/matchup; pool={len(POOL)} cards", flush=True)
-    # init population: seeds + mutations of seeds
-    pop = [load(s) for s in SEED]
+    games = int(sys.argv[3]) if len(sys.argv) > 3 else 20
+    print(f"GA: {gens} gens x {pop_n} pop x {games} games vs {len(FIELD_SLUGS)}-deck field; "
+          f"seeds={SEED_SLUGS}; pool={len(POOL)} cards", flush=True)
+    pop = [load_field(s) for s in SEED_SLUGS]
     while len(pop) < pop_n:
-        pop.append(mutate(load(RNG.choice(SEED)), k=RNG.randint(2, 5)))
+        pop.append(mutate(load_field(RNG.choice(SEED_SLUGS)), k=RNG.randint(2, 5)))
     best_ever = (0.0, None, None)
     for g in range(gens):
         scored = []
         for i, d in enumerate(pop):
-            slug = f"ga_g{g}_i{i}"; save(d, slug)
-            avg, sc = fitness(slug, games)
-            scored.append((avg, d, sc))
+            fit, r = fitness(d, games)
+            scored.append((fit, d, r))
         scored.sort(key=lambda x: -x[0])
         top = scored[: max(2, pop_n // 3)]
         if scored[0][0] > best_ever[0]:
             best_ever = scored[0]; save(best_ever[1], "ga_best")
-        print(f"gen {g}: best={scored[0][0]:.3f} {dict(zip(META,[round(s,2) for s in scored[0][2]]))} "
+        b = scored[0][2]
+        worst_opp = min(b["per"], key=b["per"].get) if b["per"] else "?"
+        print(f"gen {g}: fit={scored[0][0]:.3f} fw={b['fw']:.3f} "
+              f"worst={b['worst']:.3f} vs {worst_opp}({_arch.get(worst_opp,'?')}) "
               f"| top3={[round(s[0],3) for s in scored[:3]]}", flush=True)
-        # next gen: elites + crossover/mutate
         nxt = [t[1] for t in top]
         while len(nxt) < pop_n:
-            a, b = RNG.choice(top)[1], RNG.choice(top)[1]
-            child = mutate(crossover(a, b), k=RNG.randint(1, 4))
-            nxt.append(child)
+            a, b2 = RNG.choice(top)[1], RNG.choice(top)[1]
+            nxt.append(mutate(crossover(a, b2), k=RNG.randint(1, 4)))
         pop = nxt
-    print(f"\nBEST: field={best_ever[0]:.3f} -> decks/ga_best.csv {dict(zip(META,[round(s,2) for s in best_ever[2]]))}", flush=True)
+    r = best_ever[2]
+    print(f"\nBEST: fit={best_ever[0]:.3f} fw={r['fw']:.3f} worst={r['worst']:.3f} -> decks/ga_best.csv",
+          flush=True)
+
+
+def load_field(slug):
+    return _deck_of(slug)
 
 
 if __name__ == "__main__":
