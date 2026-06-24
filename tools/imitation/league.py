@@ -125,6 +125,51 @@ def _roster_path():
     return f"{ROOT}/.fetch_tmp/roster.json"
 
 
+def challenge_field(cand_deck, opp_slugs=None, games=20, workers=8, cand_label="cand"):
+    """Gauntlet a candidate deck vs the field (typh both sides -> isolate the deck). Does NOT
+    store games (GA probes are ephemeral). Returns {fw, worst, raw, per} field-weighted by real count."""
+    import collections
+    opp_slugs = opp_slugs or _all_field_slugs()
+    roster = [{"slug": cand_label, "deck": list(cand_deck), "policy": None, "pilot": "typh"}]
+    roster += build_roster(opp_slugs, force_pilot="typh")
+    json.dump(roster, open(_roster_path(), "w"))
+    cnt = {fn: c for fn, c in replays_db._connect().execute("SELECT fname,count FROM decks")}
+    W = collections.defaultdict(float); N = collections.defaultdict(int)
+    lock = threading.Lock()
+
+    def run_shard(s):
+        proc = subprocess.Popen(
+            ["docker", "run", "--rm", "--platform", "linux/amd64", "-v", f"{ROOT}:/app",
+             "-w", "/app/autoresearch", "-e", "PYTHONPATH=/app/sdk", "python:3.11-slim",
+             "python", "/app/tools/imitation/league_play.py", "/app/.fetch_tmp/roster.json",
+             "--games", str(games), "--star", "--shard", str(s), "--nshards", str(workers)],
+            stdout=subprocess.PIPE, text=True)
+        for line in proc.stdout:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            o, w = r["deck_b"], r["winner"]
+            with lock:
+                W[o] += 1.0 if w == 0 else 0.5 if w == 2 else 0.0
+                N[o] += 1
+        proc.wait()
+
+    workers = max(1, min(workers, len(opp_slugs)))
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        list(ex.map(run_shard, range(workers)))
+    per = {o: W[o] / N[o] for o in N if N[o]}
+    num = sum(cnt.get(o, 1) * v for o, v in per.items())
+    den = sum(cnt.get(o, 1) for o in per)
+    return {"fw": round(num / den, 4) if den else 0.0,
+            "worst": round(min(per.values()), 4) if per else 0.0,
+            "raw": round(sum(per.values()) / len(per), 4) if per else 0.0,
+            "per": per}
+
+
 def print_matrix(matrix):
     """Win rate of deck_a vs deck_b per pairing."""
     print("\n  deck_a            deck_b            a_wr   n")

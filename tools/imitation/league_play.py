@@ -45,30 +45,32 @@ def main():
     ap.add_argument("--games", type=int, default=30)
     ap.add_argument("--shard", type=int, default=0)     # this worker's index
     ap.add_argument("--nshards", type=int, default=1)   # total workers; play pairings where idx%n==shard
+    ap.add_argument("--star", action="store_true")      # only roster[0] vs each other (challenger gauntlet)
     args = ap.parse_args()
     roster = json.load(open(args.roster))
     for r in roster:
         r["_agent"] = make_pilot(r["deck"], r.get("policy"))
 
-    pair_idx = -1
-    for i in range(len(roster)):
-        for k in range(i + 1, len(roster)):
-            pair_idx += 1
-            if pair_idx % args.nshards != args.shard:
+    if args.star:
+        pairs = [(0, k) for k in range(1, len(roster))]
+    else:
+        pairs = [(i, k) for i in range(len(roster)) for k in range(i + 1, len(roster))]
+    for pair_idx, (i, k) in enumerate(pairs):
+        if pair_idx % args.nshards != args.shard:
+            continue
+        A, B = roster[i], roster[k]
+        for g in range(args.games):
+            if g % 2 == 0:  # A is seat 0
+                res = play_one(A["deck"], B["deck"], A["_agent"], B["_agent"])
+                winner = 2 if res == 2 else (0 if res == 0 else 1) if res in (0, 1) else None
+            else:           # B is seat 0 -> remap seat winner to deck index
+                res = play_one(B["deck"], A["deck"], B["_agent"], A["_agent"])
+                winner = 2 if res == 2 else (1 if res == 0 else 0) if res in (0, 1) else None
+            if winner is None:
                 continue
-            A, B = roster[i], roster[k]
-            for g in range(args.games):
-                if g % 2 == 0:  # A is seat 0
-                    res = play_one(A["deck"], B["deck"], A["_agent"], B["_agent"])
-                    winner = 2 if res == 2 else (0 if res == 0 else 1) if res in (0, 1) else None
-                else:           # B is seat 0 -> remap seat winner to deck index
-                    res = play_one(B["deck"], A["deck"], B["_agent"], A["_agent"])
-                    winner = 2 if res == 2 else (1 if res == 0 else 0) if res in (0, 1) else None
-                if winner is None:
-                    continue
-                print(json.dumps({"deck_a": A["slug"], "deck_b": B["slug"],
-                                  "pilot_a": A.get("pilot"), "pilot_b": B.get("pilot"),
-                                  "winner": winner}), flush=True)
+            print(json.dumps({"deck_a": A["slug"], "deck_b": B["slug"],
+                              "pilot_a": A.get("pilot"), "pilot_b": B.get("pilot"),
+                              "winner": winner}), flush=True)
 
 
 if __name__ == "__main__":
