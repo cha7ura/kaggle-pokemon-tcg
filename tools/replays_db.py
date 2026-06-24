@@ -12,7 +12,7 @@ decompressing. Raw JSON is kept as a zlib-compressed blob.
 Reader API (import this module):
   for ep_id, game in iter_replays():  ...      # game = decompressed dict
 """
-import json, glob, os, sys, sqlite3, zlib
+import json, glob, os, sys, sqlite3, zlib, csv, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = f"{ROOT}/replays.sqlite"
@@ -26,12 +26,25 @@ CREATE TABLE IF NOT EXISTS replays (
   source TEXT DEFAULT 'leader',  -- 'leader' (top-Elo) or 'ours'
   blob BLOB NOT NULL             -- zlib.compress(raw json bytes)
 );
+CREATE TABLE IF NOT EXISTS cards (
+  card_id INTEGER PRIMARY KEY, name TEXT, card_type TEXT,
+  row_json TEXT                  -- full cards_full.csv row
+);
+CREATE TABLE IF NOT EXISTS decks (
+  sig TEXT PRIMARY KEY, fname TEXT, archetype TEXT, count INTEGER,
+  cards_json TEXT                -- the 60 card ids
+);
+CREATE TABLE IF NOT EXISTS policies (
+  deck_sig TEXT, version INTEGER, created REAL, accuracy REAL, note TEXT,
+  tree_json TEXT,               -- stdlib-walkable tree
+  PRIMARY KEY (deck_sig, version)
+);
 """
 
 
 def _connect():
     db = sqlite3.connect(DB)
-    db.execute(SCHEMA)
+    db.executescript(SCHEMA)
     # migrate older dbs that predate the source column
     cols = [r[1] for r in db.execute("PRAGMA table_info(replays)")]
     if "source" not in cols:
@@ -116,12 +129,88 @@ def iter_replays(where=None, params=()):
     db.close()
 
 
+def store_cards(path=f"{ROOT}/autoresearch/cards_full.csv"):
+    db = _connect()
+    n = 0
+    for r in csv.DictReader(open(path)):
+        db.execute("INSERT OR REPLACE INTO cards VALUES (?,?,?,?)",
+                   (int(r["cardId"]), r["name"], r.get("cardType"), json.dumps(r)))
+        n += 1
+    db.commit(); db.close()
+    print(f"cards: stored {n}")
+
+
+def store_decks(field_dir=f"{ROOT}/autoresearch/decks/field"):
+    weights = json.load(open(f"{field_dir}/weights.json"))
+    db = _connect()
+    for w in weights:
+        deck = [int(x) for x in open(f"{field_dir}/{w['slug']}.csv") if x.strip().isdigit()]
+        sig = "_".join(str(x) for x in sorted(deck))
+        db.execute("INSERT OR REPLACE INTO decks VALUES (?,?,?,?,?)",
+                   (sig, w["slug"], w.get("archetype"), w.get("count"), json.dumps(deck)))
+    db.commit(); db.close()
+    print(f"decks: stored {len(weights)}")
+
+
+def store_policy(deck_sig, tree, accuracy=None, note="", created=None):
+    """Append a new policy version for a deck (version = prev max + 1)."""
+    db = _connect()
+    v = db.execute("SELECT COALESCE(MAX(version),0)+1 FROM policies WHERE deck_sig=?",
+                   (deck_sig,)).fetchone()[0]
+    db.execute("INSERT INTO policies VALUES (?,?,?,?,?,?)",
+               (deck_sig, v, created if created is not None else time.time(),
+                accuracy, note, json.dumps(tree)))
+    db.commit(); db.close()
+    return v
+
+
+def get_policy(deck_sig, version=None):
+    """Latest policy tree for a deck (or a specific version). None if absent."""
+    db = _connect()
+    if version is None:
+        row = db.execute("SELECT tree_json FROM policies WHERE deck_sig=? "
+                         "ORDER BY version DESC LIMIT 1", (deck_sig,)).fetchone()
+    else:
+        row = db.execute("SELECT tree_json FROM policies WHERE deck_sig=? AND version=?",
+                         (deck_sig, version)).fetchone()
+    db.close()
+    return json.loads(row[0]) if row else None
+
+
+def sync_policies(pol_dir=f"{ROOT}/tools/imitation/policies",
+                  manifest=f"{ROOT}/tools/imitation/data/manifest.json", note="", created=None):
+    """Ingest current policies/*.json as a new version batch, mapping file-stem -> deck_sig."""
+    by_file = {m["file"]: m for m in json.load(open(manifest))}
+    n = 0
+    for f in glob.glob(f"{pol_dir}/*.json"):
+        stem = os.path.splitext(os.path.basename(f))[0]
+        m = by_file.get(stem)
+        if not m:
+            continue
+        store_policy(m["deck_sig"], json.load(open(f)),
+                     accuracy=m.get("accuracy"), note=note, created=created)
+        n += 1
+    print(f"policies: stored {n} (new version batch)")
+
+
+def build_artifacts(note=""):
+    store_cards(); store_decks(); sync_policies(note=note)
+
+
 def _selftest():
     # roundtrip a tiny fake game through compress/decompress
     g = {"info": {"TeamNames": ["a", "b"]}, "rewards": [1, 0], "steps": []}
     raw = json.dumps(g).encode()
     assert json.loads(zlib.decompress(zlib.compress(raw))) == g
     assert _meta(raw) == ("a", "b", 1, 0)
+    # policy versioning: two stores -> v1, v2; get_policy returns latest
+    sig = "__selftest_sig__"
+    db = _connect(); db.execute("DELETE FROM policies WHERE deck_sig=?", (sig,)); db.commit(); db.close()
+    assert store_policy(sig, {"v": 1}, created=0.0) == 1
+    assert store_policy(sig, {"v": 2}, created=0.0) == 2
+    assert get_policy(sig) == {"v": 2}
+    assert get_policy(sig, version=1) == {"v": 1}
+    db = _connect(); db.execute("DELETE FROM policies WHERE deck_sig=?", (sig,)); db.commit(); db.close()
     print("selftest ok")
 
 
@@ -137,5 +226,8 @@ if __name__ == "__main__":
             ingest(JSON_DIR, "leader", delete="--delete" in a, limit=n)
     elif a[0] == "stats":
         stats()
+    elif a[0] == "artifacts":
+        note = a[a.index("--note") + 1] if "--note" in a else ""
+        build_artifacts(note=note)
     else:
         print(__doc__)
