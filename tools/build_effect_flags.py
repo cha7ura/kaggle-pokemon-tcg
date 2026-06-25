@@ -78,6 +78,16 @@ def _damage_kind(damage_text):
     return "damage"
 
 
+def _spread_amount(damage_text):
+    """# of damage counters this attack places on the opponent's BENCH (Phantom-Dive-style spread).
+    Returns counters (×10 = damage); 0 if not a bench-spread attack."""
+    t = norm(damage_text)
+    if "damage counter" not in t or not re.search(r"bench", t):
+        return 0
+    m = re.search(r"(\d+)\s+damage counter", t)
+    return int(m.group(1)) if m else 0
+
+
 def scaling_of(damage_text):
     t = norm(damage_text)
     for name, rx in SCALE:
@@ -100,6 +110,7 @@ def card_flags(rec):
         texts.append(atk.get("damage_text", ""))
         atk["scaling_basis"] = scaling_of(atk.get("damage_text", ""))
         atk["damage_kind"] = _damage_kind(atk.get("damage_text", ""))
+        atk["spread_amount"] = _spread_amount(atk.get("damage_text", ""))
         if atk.get("damage_base", 0) == 0 and (atk.get("damage_text") or "").strip():
             has_setup = True
     for t in texts:

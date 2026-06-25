@@ -128,8 +128,13 @@ def best_damage(att_pkmn, deff_pkmn, deff_is_active, ctx):
     for atk in ac["attacks"]:
         if not attack_ready(attached, atk.get("energy_cost") or []):
             continue
-        d = eval_attack_damage(atk, ctx)
-        d = apply_weak_resist(d, ac, dc, deff_is_active, atk.get("damage_kind", "damage"))
+        if deff_is_active:
+            d = eval_attack_damage(atk, ctx)
+            d = apply_weak_resist(d, ac, dc, True, atk.get("damage_kind", "damage"))
+        else:
+            # vs a BENCH target: the only reach is bench-spread counters (Phantom Dive etc.),
+            # all dumpable on one Pokemon for a KO. Counters bypass weakness.
+            d = (atk.get("spread_amount", 0) or 0) * 10
         best = max(best, d)
     return best
 
@@ -172,6 +177,22 @@ def opp_max_damage_to_active(obs, seat, ko_last_turn=False):
     for att in attackers:
         ctx = _ctx(att, my_active, opp, me, opp_hand, ko_last_turn, opp_prizes, my_prizes)
         best = max(best, best_damage(att, my_active, True, ctx))
+    return best
+
+
+def spread_available(obs, seat):
+    """Max bench-spread counters (×10 damage) our ready attackers can place this turn."""
+    cards = _cards()
+    me, _, _ = _players(obs, seat)
+    best = 0
+    for att in [a for a in (me.get("active") or []) if a] + [b for b in (me.get("bench") or []) if b]:
+        ac = cards.get(att.get("id"))
+        if not ac:
+            continue
+        attached = att.get("energies") or []
+        for atk in (ac.get("attacks") or []):
+            if attack_ready(attached, atk.get("energy_cost") or []):
+                best = max(best, (atk.get("spread_amount", 0) or 0) * 10)
     return best
 
 
