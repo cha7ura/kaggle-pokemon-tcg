@@ -45,7 +45,49 @@ STATE_NAMES = [
     "our_spread_available", # bench-spread counters we can place (Dragapult Phantom Dive engine)
     # history
     "ko_last_turn",
+    # --- trajectory / recent-history (from obs.logs; on my turn this spans the opponent's last turn) ---
+    "log_opp_attacked", "log_dmg_to_me", "log_dmg_to_opp", "log_my_ko", "log_opp_ko",
+    "log_my_plays", "log_my_evolves", "log_my_attaches", "log_status_on_me", "log_coins",
 ]
+
+# LogType / AreaType ids
+_L_MOVE, _L_PLAY, _L_ATTACH, _L_EVOLVE, _L_ATTACK, _L_HP = 6, 10, 11, 12, 15, 16
+_L_STATUS = {17, 18, 19, 20, 21}  # POISONED..CONFUSED
+_L_COIN = 22
+_A_DISCARD, _A_ACTIVE, _A_BENCH = 3, 4, 5
+
+
+def log_features(obs, seat):
+    """Summarize obs.logs (events since our last selection). On our turn this covers the opponent's
+    whole last turn -> 'what just happened': attacks, damage, KOs, our tempo, status, coin variance."""
+    from . import card_features
+    cards = card_features._cards()
+    f = dict(log_opp_attacked=0.0, log_dmg_to_me=0.0, log_dmg_to_opp=0.0, log_my_ko=0.0,
+             log_opp_ko=0.0, log_my_plays=0.0, log_my_evolves=0.0, log_my_attaches=0.0,
+             log_status_on_me=0.0, log_coins=0.0)
+    for lg in (obs.get("logs") or []):
+        t = lg.get("type"); mine = (lg.get("playerIndex") == seat)
+        if t == _L_ATTACK and not mine:
+            f["log_opp_attacked"] = 1.0
+        elif t == _L_HP:
+            v = lg.get("value") or 0
+            if v < 0:
+                f["log_dmg_to_me" if mine else "log_dmg_to_opp"] += -v
+        elif t == _L_MOVE and lg.get("toArea") == _A_DISCARD and lg.get("fromArea") in (_A_ACTIVE, _A_BENCH):
+            c = cards.get(lg.get("cardId"))
+            if c and c.get("card_type") == "POKEMON":
+                f["log_my_ko" if mine else "log_opp_ko"] += 1.0
+        elif mine and t == _L_PLAY:
+            f["log_my_plays"] += 1.0
+        elif mine and t == _L_EVOLVE:
+            f["log_my_evolves"] += 1.0
+        elif mine and t == _L_ATTACH:
+            f["log_my_attaches"] += 1.0
+        elif t in _L_STATUS and mine:
+            f["log_status_on_me"] += 1.0
+        elif t == _L_COIN:
+            f["log_coins"] += 1.0
+    return f
 
 
 def _bench_dmg(player):
@@ -59,6 +101,8 @@ def _bench_dmg(player):
 def state_row(obs, seat, decklist, ko_last_turn=False):
     me, opp, cur = _p(obs, seat)
     ma, oa = _active(me), _active(opp)
+    lf = log_features(obs, seat)
+    ko_last_turn = ko_last_turn or (lf["log_my_ko"] > 0)   # derive from logs (feeds revenge attacks)
     first = cur.get("firstPlayer", -1)
     going_second = 1.0 if (first != -1 and first != seat) else 0.0
     turn = cur.get("turn", 0)
@@ -112,6 +156,7 @@ def state_row(obs, seat, decklist, ko_last_turn=False):
         "our_spread_available": threat.spread_available(obs, seat),
         "ko_last_turn": 1.0 if ko_last_turn else 0.0,
     }
+    v.update(lf)
     return [float(v[k]) for k in STATE_NAMES], STATE_NAMES
 
 

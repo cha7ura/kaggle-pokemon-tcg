@@ -80,15 +80,26 @@ def main():
 
     gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
     tr, te = next(gss.split(X, y, groups))
-    rf = RandomForestClassifier(n_estimators=_arg("--trees", 150, int),
-                                max_depth=_arg("--depth", 14, int), min_samples_leaf=20,
-                                class_weight="balanced", n_jobs=-1, random_state=0)
-    t0 = time.time()
-    rf.fit(X[tr], y[tr])
-    print(f"trained {len(rf.estimators_)} trees in {time.time()-t0:.0f}s")
-
+    kind = _arg("--model", "xgb", str)
     from tools.imitation import model_io
-    packed = model_io.pack(rf, names)
+    t0 = time.time()
+    if kind == "xgb":
+        import xgboost as xgb
+        spw = (y[tr] == 0).sum() / max(1, (y[tr] == 1).sum())
+        clf = xgb.XGBClassifier(n_estimators=_arg("--trees", 600, int),
+                                max_depth=_arg("--depth", 8, int), learning_rate=0.05,
+                                subsample=0.8, colsample_bytree=0.8, scale_pos_weight=spw,
+                                n_jobs=-1, eval_metric="logloss", random_state=0)
+        clf.fit(X[tr], y[tr])
+        packed = model_io.pack_xgb(clf, names)
+        print(f"trained XGBoost {clf.n_estimators} trees in {time.time()-t0:.0f}s")
+    else:
+        clf = RandomForestClassifier(n_estimators=_arg("--trees", 150, int),
+                                     max_depth=_arg("--depth", 14, int), min_samples_leaf=20,
+                                     class_weight="balanced", n_jobs=-1, random_state=0)
+        clf.fit(X[tr], y[tr])
+        packed = model_io.pack(clf, names)
+        print(f"trained RF {len(clf.estimators_)} trees in {time.time()-t0:.0f}s")
     # eval via the COMPACT walker (proves the packed model matches) on a capped test sample
     cap = min(len(te), 40000)
     sub = te[:cap]
@@ -98,10 +109,10 @@ def main():
 
     out = os.path.join(DATA, "card_policy.npz")
     model_io.save(out, packed)
-    print(f"exported -> {out} ({os.path.getsize(out)//1024//1024} MB, {len(rf.estimators_)} trees, "
+    print(f"exported -> {out} ({os.path.getsize(out)//1024//1024} MB, {len(packed['sizes'])} trees, "
           f"{len(packed['L'])} nodes)")
     # top feature importances (sanity)
-    imp = sorted(zip(names, rf.feature_importances_), key=lambda x: -x[1])[:12]
+    imp = sorted(zip(names, clf.feature_importances_), key=lambda x: -x[1])[:12]
     print("top features:", [f"{n}={i:.3f}" for n, i in imp])
 
 
