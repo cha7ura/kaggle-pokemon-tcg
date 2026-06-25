@@ -15,7 +15,8 @@ DATA = os.path.join(HERE, "autoresearch", "data")
 
 FLAGS = ["accelerate_energy", "draw", "search", "gust", "heal", "spread_damage", "inflict_status",
          "switch", "move_energy", "disrupt_hand", "recover_from_discard", "setup_attack", "protect",
-         "damage_boost", "retreat_reduce", "devolve", "item_lock", "deck_refresh", "prize_manipulate"]
+         "damage_boost", "retreat_reduce", "devolve", "item_lock", "deck_refresh", "prize_manipulate",
+         "conditional_activation"]
 
 # each rule: flag -> regex (searched on lowercased, nbsp-normalized text). Order-independent (multi-label).
 RULES = {
@@ -37,6 +38,7 @@ RULES = {
     "retreat_reduce":      r"(retreat cost.*(less|reduce|\-)|(less|reduce).*retreat)",
     "protect":             r"(prevent all damage|isn'?t affected by|no damage .*done to this|can'?t be (knocked|affected))",
     "damage_boost":        r"\d+ more damage",
+    "conditional_activation": r"you can use this (card|attack) only if|only if you go second",
 }
 # scaling_basis on an attack's damage_text (lowercased)
 SCALE = [
@@ -44,6 +46,8 @@ SCALE = [
     ("per_energy_self", r"for each .*energy attached to this"),
     ("per_hand_card",   r"for each card in your hand"),
     ("on_ko_last_turn", r"knocked out .*(last turn|during your opponent)"),
+    ("on_opp_prizes",   r"opponent('s)? has.{0,20}prize card|opponent doesn'?t have exactly"),
+    ("on_my_prizes",    r"you have (exactly |\d|more|fewer).{0,20}prize card"),
     ("per_bench",       r"for each .*benched"),
     ("per_damaged",     r"for each .*damage counter"),
     ("coinflip",        r"flip .*coin"),
@@ -91,7 +95,13 @@ def card_flags(rec):
 
 
 def main():
-    cards = json.load(open(os.path.join(DATA, "cards_engine.json")))
+    # Read cards.json if present (preserves wiki_url/set/rulings added by fetch_card_wiki merge),
+    # else the engine base. build_effect_flags is the FINAL pipeline step → adds flags + scaling
+    # on top of whatever enrichment already happened, without clobbering it.
+    base = os.path.join(DATA, "cards.json")
+    if not os.path.exists(base):
+        base = os.path.join(DATA, "cards_engine.json")
+    cards = json.load(open(base))
     for r in cards:
         flags, has_setup = card_flags(r)
         r["effect_flags"] = sorted(flags)
