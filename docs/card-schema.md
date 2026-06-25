@@ -93,17 +93,20 @@ and the policy feature layer (`docs/superpowers/specs/2026-06-25-card-policy-des
 }
 ```
 
-## Acquisition pipeline (3 steps → `cards.json`)
+## Acquisition pipeline (→ `cards.json`)
 
-1. **Engine spine** (`tools/build_card_text.py`, docker, ~1 run): emit every `card_id` with name,
-   type, Pokémon stats, `abilities[]` (from `CardData.skills`), `attacks[]` (id, cost, damage,
-   `Attack.text`). Complete, exact, all 1267. Sets `source.engine=true`.
-2. **Wiki fill** (`tools/fetch_card_wiki.py`, batched/rate-limited/resumable): crawl Bulbapedia
-   expansion list pages → per-card URLs (`{Name}_({Set}_{Number})`) → parse → fill `set`, `number`,
-   `wiki_url`, and **Trainer `effect_text`** (the engine may not carry it), validate Pokémon fields.
-   Bind to `card_id` by name+set+number; mismatches flagged not silently merged. Cache `cards_kb/<id>.md`.
-3. **Classify** (`tools/build_effect_flags.py`): text → `effect_flags` + `scaling_basis` (keyword rules,
+1. **Engine spine — COMPLETE, the only required step** (`tools/build_card_text.py`, docker, 1 run, DONE
+   2026-06-25 → `autoresearch/data/cards_engine.json`, 1267 cards). Engine `all_card_data()` carries the
+   FULL effect text: Pokémon abilities (`CardData.skills`, 218 cards incl. Teal Dance), attacks
+   (`Attack.text`), **and all 191 Trainer effects** (Lillie's, Rare Candy …) + special energy. The old
+   `cards_full.csv` only looked empty because its extractor read `attacks` and skipped `skills`. So the
+   wiki is NOT needed for card effects — the engine is the authoritative, complete source.
+2. **Classify** (`tools/build_effect_flags.py`): text → `effect_flags` + `scaling_basis` (keyword rules,
    optional offline LLM for ambiguous). Unparseable → empty flags + `flag_needs_review`. Emit
    `cards.json` (full schema) + flat `cards_effects.csv` (the columns the feature layer consumes).
+3. **Wiki enrichment — OPTIONAL, de-scoped** (`tools/fetch_card_wiki.py`): only for `set`/`number`/
+   `wiki_url`/`competitive_role`/rulings, not for effects. Entry point:
+   `bulbapedia.../Browse:Trading_Card_Game` → expansion pages → per-card URLs
+   (`{Name}_({Set}_{Number})`). Batched/rate-limited/resumable; can lag indefinitely without blocking.
 
 Submission ships only the small derived `cards_effects.csv` — never the scrape, never a network call.

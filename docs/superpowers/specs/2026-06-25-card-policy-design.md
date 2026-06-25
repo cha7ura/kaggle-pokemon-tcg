@@ -143,17 +143,14 @@ All operate on the RAW obs dict so identical code runs on replay obs and live ob
        `card_id`. Authoritative (it's what the sim enforces). Covers all 1267. NOTE: the current
        `cards_full.csv` **dropped abilities entirely** — e.g. Teal Mask Ogerpon ex's "Teal Dance" (attach
        Grass + draw) is an Ability and is missing; the rebuild must include `skills`, not just `attacks`.
-    2. **Wiki/web (secondary in general, PRIMARY for Trainers):** `tools/fetch_card_wiki.py` pulls
-       per-card pages from **Bulbapedia** (clean per-card effect text + rulings; validated on Teal Mask
-       Ogerpon ex + Lillie's Determination) and/or **LimitlessTCG** (matches our sim pool, per
-       [[external-meta-sources]]), plus web-search fallback. Batched, rate-limited, cached to
-       `cards_kb/<card_id>.md`; resumable. Name→`card_id` binding is fuzzy (name+set/number), flagged.
-       **Trainers are the load-bearing case:** the 191 Item/Supporter/Stadium/Tool cards currently have
-       NO effect data at all in `cards_full.csv` (blank rows — e.g. Rare Candy, Lillie's Determination).
-       If the engine's `CardData.skills` does not carry Trainer effect text (verify in step 1), the wiki
-       is the **only** source for what these cards do — and they are precisely the draw/search/gust/
-       refresh/energy-accel cards the policy most needs to value. Trainer effects also carry conditions
-       (Lillie's: draw 6, or 8 if exactly 6 prizes) → classify into effect flags + magnitude.
+    2. **Wiki — OPTIONAL enrichment (de-scoped; NOT needed for effects).** VERIFIED 2026-06-25: the
+       engine already carries ALL effect text incl. all 191 Trainer effects (Lillie's, Rare Candy) and
+       218 Pokémon abilities — see `autoresearch/data/cards_engine.json`. The old `cards_full.csv` looked
+       empty only because its extractor skipped `skills`. So the wiki is reserved for `set`/`number`/
+       `competitive_role`/rulings only, and can lag without blocking. Entry:
+       `bulbapedia.../Browse:Trading_Card_Game` → expansion pages → `{Name}_({Set}_{Number})`.
+       Trainer effects carry conditions (Lillie's: draw 6, or 8 if exactly 6 prizes) → these come from the
+       engine text and are classified into effect flags + magnitude.
     3. **Classify → `cards_effects.csv`:** `tools/build_effect_flags.py` turns the KB text into the
        structured effect flags above (keyword rules; optional offline LLM pass for ambiguous cards).
        Unmatched → all-zero (safe). Adds a coarse `competitive_role` feature from the wiki data.
