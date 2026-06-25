@@ -167,6 +167,36 @@ All operate on the RAW obs dict so identical code runs on replay obs and live ob
     energy, no target, supporter-already-used) and `playable_options_count`. This is what lets the policy
     learn "play a hand-refresh card (Iono / Lillie's Determination / Research) when the hand is stuck" vs
     "keep a working hand." `hand_size` alone can't distinguish a dead 6-card hand from a live one.
+  - **Prize-race state:** `my_prize_left`, `opp_prize_left` (have), plus `prize_diff`. Drives both
+    prize-conditional CARDS (Counter Catcher/Lacey "if opp has ≤3"; engine gates availability, model learns
+    value) and prize-conditional DAMAGE (Zacian +90 if opp ≤3; `scaling_basis ∈ {on_opp_prizes,
+    on_my_prizes}` → threat.py evaluates with the live prize counts).
+  - **KO-last-turn state (state-tracker, from `obs.logs`):** `active_koed_last_turn`, `ally_ko_last_turn`.
+    Drives reactive cards (Unfair Stamp) AND revenge-attack damage (Hop's Trevenant Horrifying Revenge
+    +100, `scaling_basis=on_ko_last_turn`). The tracker detects KO events across calls (logs only span
+    since-last-selection, so it must persist per-game).
+  - **Resource-choice state (draw vs recover vs which trainer):** `needed_piece_in_discard` (bool, discard
+    fully visible → certain fetch), `draw_prob_of_needed` (hypergeometric from `deck_remaining` →
+    probabilistic), `deckout_clock`, and **which engine cards we hold/remain** — `have_draw_supporter`,
+    `have_search_item`, `have_recovery` (Night Stretcher/Super Rod), `supporter_already_used`. Lets the
+    policy pick recover-from-discard vs deck-draw vs stop-drawing, AND route through the specific trainer
+    it actually has available.
+  - **Board/turn state from the engine (gap-analysis adds, all observable):**
+    - `stadium_id` + `stadium_mine` (`State.stadium`) — stadiums swing matchups (Battle Cage anti-spread,
+      Postwick +dmg). Also `have_stadium_in_hand` to value replacing the opponent's.
+    - tool features (`Pokemon.tools`): `active_tool_id`, `tool_damage_boost`/`tool_hp`/`tool_retreat`
+      effects for our + opp attackers (Choice Band, Bravery Charm, Lucky Helmet, Rescue Board).
+    - `energy_attached_this_turn`, `retreated_this_turn` (`State`) — already-used action gates (we only had
+      supporter/stadium flags).
+    - `going_second` (`State.firstPlayer` vs `yourIndex`) — go-2nd-turn-1 cards + first-turn restrictions.
+    - `bench_free` = `benchMax − len(bench)` (both sides) — can-I-bench + opp gust-target room.
+    - `appearThisTurn` per Pokémon — evolve legality + freshly-played gust bait.
+    - `opp_deckout_clock` (opp `deckCount`) — mill/deck-out race.
+    - option/selection context: `remainDamageCounter`, `remainEnergyCost`, `contextCard` (which card/attack
+      drives this sub-selection — e.g. placing spread from which attack) → option features for those contexts.
+  - **Ability availability:** once-per-turn abilities aren't a direct flag, but are observable indirectly —
+    if an ability isn't in `obs.select.option`, it's unavailable/used. Derive `ability_available` from the
+    option list rather than tracking it ourselves.
   - **Option features must be threat-relevant for the special contexts:** for `DAMAGE_COUNTER`/
     `DAMAGE_COUNTER_ANY` options, encode the target's `hp_remaining` and whether placement creates an
     imminent KO; for `SWITCH_ENERGY`/`ATTACH`/`DETACH` energy-move options, encode the
