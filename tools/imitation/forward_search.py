@@ -47,6 +47,68 @@ def reconstruct_hidden(obs_dict, seat, decklist):
     return your_deck, your_prize, opp_deck, opp_prize, opp_hand, opp_active
 
 
+def _opp_hp_dict(obs_dict, seat):
+    pl = obs_dict["current"]["players"][1 - seat]
+    tot = 0
+    for p in (pl.get("active") or []) + (pl.get("bench") or []):
+        if p:
+            tot += p.get("hp", 0)
+    return tot
+
+
+def _my_prize_dict(obs_dict, seat):
+    return len(obs_dict["current"]["players"][seat].get("prize") or [])
+
+
+def _leaf_value(obs_after, seat, opp_hp_before, myp_before):
+    """Score the post-move state (Observation object): prizes we took dominate, then damage dealt."""
+    try:
+        pl = obs_after.current.players
+        me, opp = pl[seat], pl[1 - seat]
+        opp_hp = sum(p.hp for p in (list(me and opp.active or []) + list(opp.bench or [])) if p)
+        myp = len(me.prize or [])
+        prizes_taken = max(0, myp_before - myp)
+        return prizes_taken * 1000 + max(0, opp_hp_before - opp_hp)
+    except Exception:
+        return -1.0
+
+
+def best_option(obs_dict, seat, deck):
+    """For an ATTACK selection, pick the option that deals the most real damage / takes prizes,
+    by simulating each one ply with the engine (exact, vs threat.py's estimate). Returns an option
+    index, or None when not applicable (not an attack choice / no engine / not a live obs)."""
+    sel = obs_dict.get("select"); cur = obs_dict.get("current")
+    if not sel or not cur or not obs_dict.get("search_begin_input"):
+        return None
+    opts = sel.get("option") or []
+    is_attack = sel.get("context") == 35 or any((o or {}).get("type") == 13 for o in opts)
+    if not is_attack or len(opts) < 2:
+        return None
+    try:
+        import cg.api as cg
+    except Exception:
+        return None
+    try:
+        yd, yp, od, op, oh, oa = reconstruct_hidden(obs_dict, seat, deck)
+        obs_obj = cg.to_observation_class(obs_dict)
+        opp_before = _opp_hp_dict(obs_dict, seat)
+        myp_before = _my_prize_dict(obs_dict, seat)
+        best_i, best_v = None, -1e18
+        for i in range(len(opts)):
+            ss = cg.search_begin(obs_obj, yd, yp, od, op, oh, oa)
+            nxt = cg.search_step(ss.searchId, [i])
+            v = _leaf_value(nxt.observation, seat, opp_before, myp_before)
+            try:
+                cg.search_release(ss.searchId)
+            except Exception:
+                pass
+            if v > best_v:
+                best_v, best_i = v, i
+        return best_i
+    except Exception:
+        return None
+
+
 def _probe(obs, seat, decklist, cg):
     """Return (ok, msg): can we search_begin + search_step from this live obs?"""
     try:
