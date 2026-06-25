@@ -14,3 +14,5 @@ json_ours/
 tools/imitation/data/
 replays.sqlite
 .fetch_tmp/
+tools/imitation/data/decisions.npz
+tools/imitation/data/card_policy.json

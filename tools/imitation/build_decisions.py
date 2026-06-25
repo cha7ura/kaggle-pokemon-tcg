@@ -43,12 +43,18 @@ def iter_rows(game, gid):
         if not all(isinstance(x, int) and 0 <= x < len(opts) for x in act):
             continue
         chosen = set(act)
+        # State is identical for every option in this decision -> compute ONCE (the threat/tracker
+        # work is the expensive part). Then only the cheap option_row varies per option.
+        try:
+            sv, sn = featurize.state_row(obs, seat, deck)
+        except Exception:
+            continue
         for oi, opt in enumerate(opts):
             try:
-                vec, names = featurize.row(obs, seat, opt, deck)
+                ov, on = featurize.option_row(obs, seat, opt, deck)
             except Exception:
                 continue
-            yield vec, (1 if oi in chosen else 0), f"{gid}:{si}", names
+            yield sv + ov, (1 if oi in chosen else 0), f"{gid}:{si}", sn + on
 
 
 def main():
