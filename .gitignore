@@ -16,3 +16,4 @@ replays.sqlite
 .fetch_tmp/
 tools/imitation/data/decisions.npz
 tools/imitation/data/card_policy.json
+submission_cardpolicy_trev.tar.gz
