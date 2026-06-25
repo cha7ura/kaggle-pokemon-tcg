@@ -112,8 +112,8 @@ def state_row(obs, seat, decklist, ko_last_turn=False):
 
 
 # ---------------- OPTION ----------------
-OPTION_META = ["context", "opt_type", "opt_area", "opt_index", "n_options", "min_count", "max_count",
-               "remain_damage_counter", "remain_energy_cost",
+OPTION_META = ["context", "opt_type", "opt_area", "opt_index", "opt_number", "opt_count",
+               "n_options", "min_count", "max_count", "remain_damage_counter", "remain_energy_cost",
                "target_hp_remaining", "creates_imminent_ko", "draw_prob_card", "needed_in_discard"]
 OPTION_NAMES = OPTION_META + ["opt_" + n for n in card_features.FEATURE_NAMES]
 
@@ -138,6 +138,8 @@ def option_row(obs, seat, option, decklist):
         "context": sel.get("context", -1), "opt_type": o.get("type", -1),
         "opt_area": o.get("area", -1) if o.get("area") is not None else -1,
         "opt_index": o.get("index", -1) if o.get("index") is not None else -1,
+        "opt_number": o.get("number") if o.get("number") is not None else -1,   # DRAW_COUNT etc.
+        "opt_count": o.get("count") if o.get("count") is not None else -1,       # multi-energy/draw count
         "n_options": len(sel.get("option") or []), "min_count": sel.get("minCount", 0),
         "max_count": sel.get("maxCount", 0), "remain_damage_counter": sel.get("remainDamageCounter", 0),
         "remain_energy_cost": sel.get("remainEnergyCost", 0),
