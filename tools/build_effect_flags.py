@@ -64,6 +64,20 @@ def classify_text(text):
     return {f for f, rx in RULES.items() if re.search(rx, t)}
 
 
+def _damage_kind(damage_text):
+    """How the attack's damage interacts with the pipeline (the 'damage vs counters vs effects' rule):
+    - 'counters'    : places/moves damage counters -> bypasses weakness/resistance/reduction
+    - 'no_weakness' : "isn't affected by Weakness/Resistance / any effects" -> flat, no doubling
+    - 'damage'      : normal -> weakness x2 / resistance -30 apply on the Active
+    """
+    t = norm(damage_text)
+    if re.search(r"damage counter", t):
+        return "counters"
+    if re.search(r"isn'?t affected by|not affected by any effect|aren'?t affected by", t):
+        return "no_weakness"
+    return "damage"
+
+
 def scaling_of(damage_text):
     t = norm(damage_text)
     for name, rx in SCALE:
@@ -85,6 +99,7 @@ def card_flags(rec):
     for atk in (rec.get("attacks") or []):
         texts.append(atk.get("damage_text", ""))
         atk["scaling_basis"] = scaling_of(atk.get("damage_text", ""))
+        atk["damage_kind"] = _damage_kind(atk.get("damage_text", ""))
         if atk.get("damage_base", 0) == 0 and (atk.get("damage_text") or "").strip():
             has_setup = True
     for t in texts:

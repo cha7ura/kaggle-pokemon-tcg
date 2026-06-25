@@ -41,6 +41,7 @@ STATE_NAMES = [
     # race / threat
     "prize_diff", "our_max_dmg_active", "our_best_dmg_any", "imminent_ko_count",
     "opp_max_dmg_to_active", "opp_lethal_next", "our_lethal_active",
+    "bench_beats_active",   # a benched attacker out-damages the active -> promote/retreat to it
     # history
     "ko_last_turn",
 ]
@@ -106,6 +107,7 @@ def state_row(obs, seat, decklist, ko_last_turn=False):
         "imminent_ko_count": imminent, "opp_max_dmg_to_active": opp_dmg,
         "opp_lethal_next": 1.0 if (ma and opp_dmg >= ma.get("hp", 1)) else 0.0,
         "our_lethal_active": 1.0 if (oa and our_active_dmg >= oa.get("hp", 1)) else 0.0,
+        "bench_beats_active": 1.0 if our_best > our_active_dmg else 0.0,
         "ko_last_turn": 1.0 if ko_last_turn else 0.0,
     }
     return [float(v[k]) for k in STATE_NAMES], STATE_NAMES

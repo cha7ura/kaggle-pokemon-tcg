@@ -93,8 +93,10 @@ def eval_attack_damage(atk, ctx):
     return dmg
 
 
-def apply_weak_resist(dmg, attacker_card, defender_card, defender_is_active):
-    if not defender_is_active or dmg <= 0:
+def apply_weak_resist(dmg, attacker_card, defender_card, defender_is_active, kind="damage"):
+    # counters / "not affected by effects" bypass the weakness/resistance pipeline (the damage-vs-
+    # counters rule). Only true 'damage' to the Active doubles on weakness.
+    if kind != "damage" or not defender_is_active or dmg <= 0:
         return dmg
     atype = (attacker_card or {}).get("energy_type")
     if defender_card and defender_card.get("weakness") and defender_card["weakness"] == atype:
@@ -127,7 +129,7 @@ def best_damage(att_pkmn, deff_pkmn, deff_is_active, ctx):
         if not attack_ready(attached, atk.get("energy_cost") or []):
             continue
         d = eval_attack_damage(atk, ctx)
-        d = apply_weak_resist(d, ac, dc, deff_is_active)
+        d = apply_weak_resist(d, ac, dc, deff_is_active, atk.get("damage_kind", "damage"))
         best = max(best, d)
     return best
 

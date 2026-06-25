@@ -53,6 +53,8 @@ def card_static(card_id):
         "best_dmg": float(best),
         "n_attacks": float(len(attacks)),
         "n_abilities": float(len(r.get("abilities") or [])),
+        "has_ability": 1.0 if (r.get("abilities")) else 0.0,            # ability-lock wall interactions
+        "rule_box": 1.0 if (r.get("is_ex") or r.get("is_mega_ex")) else 0.0,  # Path/Rule-Box lock
         "has_setup_attack": float(bool(r.get("has_setup_attack"))),
     }
     for f in EFFECT_FLAGS:
@@ -62,7 +64,8 @@ def card_static(card_id):
 
 FEATURE_NAMES = (["card_type_idx", "energy_type_idx", "hp", "retreat_cost", "stage", "is_ex",
                   "is_mega_ex", "is_tera", "prize_value", "ace_spec", "best_dmg", "n_attacks",
-                  "n_abilities", "has_setup_attack"] + [f"flag_{f}" for f in EFFECT_FLAGS])
+                  "n_abilities", "has_ability", "rule_box", "has_setup_attack"]
+                 + [f"flag_{f}" for f in EFFECT_FLAGS])
 
 
 def card_vector(card_id):
