@@ -87,17 +87,19 @@ def main():
     rf.fit(X[tr], y[tr])
     print(f"trained {len(rf.estimators_)} trees in {time.time()-t0:.0f}s")
 
-    model = export_forest(rf, names)
-    # eval via the EXPORTED walker (proves the export matches) on a capped test sample for speed
+    from tools.imitation import model_io
+    packed = model_io.pack(rf, names)
+    # eval via the COMPACT walker (proves the packed model matches) on a capped test sample
     cap = min(len(te), 40000)
     sub = te[:cap]
-    sc = score_forest(model, X[sub])
+    sc = model_io.score(packed, X[sub])
     acc, rand, n = decision_top1(sc, y[sub], groups[sub])
     print(f"held-out decision top-1: {acc:.3f}  (random {rand:.3f}, n={n} decisions, {cap} rows)")
 
-    out = os.path.join(DATA, "card_policy.json")
-    json.dump(model, open(out, "w"))
-    print(f"exported -> {out} ({os.path.getsize(out)//1024} KB, {len(model['trees'])} trees)")
+    out = os.path.join(DATA, "card_policy.npz")
+    model_io.save(out, packed)
+    print(f"exported -> {out} ({os.path.getsize(out)//1024//1024} MB, {len(rf.estimators_)} trees, "
+          f"{len(packed['L'])} nodes)")
     # top feature importances (sanity)
     imp = sorted(zip(names, rf.feature_importances_), key=lambda x: -x[1])[:12]
     print("top features:", [f"{n}={i:.3f}" for n, i in imp])

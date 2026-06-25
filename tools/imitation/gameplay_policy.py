@@ -7,8 +7,8 @@ pilot and the Kaggle submission.
 
 Stdlib + numpy. featurize/threat/deck_tracker/card_features must be importable (bundled in submission).
 """
-import os, json
-from . import featurize, threat
+import os
+from . import featurize, threat, model_io
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
 
@@ -16,22 +16,9 @@ DATA = os.path.join(os.path.dirname(__file__), "data")
 class CardPolicy:
     def __init__(self, deck, model=None):
         self.deck = list(deck)
-        m = model or os.path.join(DATA, "card_policy.json")
-        self.model = json.load(open(m)) if isinstance(m, str) else m
-        self.names = self.model["names"]
-        # pre-parse trees to plain lists (fast walk; no numpy needed per-node)
-        self._trees = self.model["trees"]
-
-    # ---- forest scoring ----
-    def _tree(self, tr, x):
-        l, r, f, th, v = tr["l"], tr["r"], tr["f"], tr["t"], tr["v"]
-        n = 0
-        while l[n] != -1:
-            n = l[n] if x[f[n]] <= th[n] else r[n]
-        return v[n]
-
-    def _score(self, x):
-        return sum(self._tree(tr, x) for tr in self._trees) / len(self._trees)
+        m = model or os.path.join(DATA, "card_policy.npz")
+        self.packed = model_io.load(m) if isinstance(m, str) else m
+        self.names = model_io.names(self.packed)
 
     def _vec(self, full, opt_pairs):
         d = dict(full)
@@ -55,10 +42,11 @@ class CardPolicy:
             seat = cur.get("yourIndex", 0)
             sv, sn = featurize.state_row(obs, seat, self.deck)
             full = list(zip(sn, sv))
-            scores = []
+            rows = []
             for opt in opts:
                 ov, on = featurize.option_row(obs, seat, opt, self.deck)
-                scores.append(self._score(self._vec(full, list(on and zip(on, ov)))))
+                rows.append(self._vec(full, list(zip(on, ov))))
+            scores = model_io.score(self.packed, rows)        # batch-score all options at once
             order = sorted(range(n), key=lambda i: scores[i], reverse=True)
             # lethal gate: if an ATTACK option can KO the opp active, take it
             lethal = self._lethal_index(obs, seat, opts)
