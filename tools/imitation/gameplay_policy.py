@@ -8,7 +8,7 @@ pilot and the Kaggle submission.
 Stdlib + numpy. featurize/threat/deck_tracker/card_features must be importable (bundled in submission).
 """
 import os
-from . import featurize, threat, model_io, forward_search
+from . import featurize, threat, model_io  # forward_search available but gate disabled (see act)
 
 DATA = os.path.join(os.path.dirname(__file__), "data")
 
@@ -48,16 +48,11 @@ class CardPolicy:
                 rows.append(self._vec(full, list(zip(on, ov))))
             scores = model_io.score(self.packed, rows)        # batch-score all options at once
             order = sorted(range(n), key=lambda i: scores[i], reverse=True)
-            # forward-search gate: for ATTACK choices, the engine resolves EXACT damage (beats the
-            # model + threat estimate). Prefer its pick when available (live obs + engine present).
-            fs = forward_search.best_option(obs, seat, self.deck)
-            if fs is not None and 0 <= fs < n:
-                order = [fs] + [i for i in order if i != fs]
-            else:
-                # lethal gate (estimate-based): take an ATTACK that can KO the opp active
-                lethal = self._lethal_index(obs, seat, opts)
-                if lethal is not None and lethal in order:
-                    order = [lethal] + [i for i in order if i != lethal]
+            # NOTE: forward-search gate disabled — 1-ply + crude determinization validated WORSE than
+            # the model alone (avg 0.472 vs 0.597); see forward_search.py. Estimate-lethal gate only.
+            lethal = self._lethal_index(obs, seat, opts)
+            if lethal is not None and lethal in order:
+                order = [lethal] + [i for i in order if i != lethal]
             k = min(max(min_c, 1), max_c, n)
             return order[:k]
         except Exception:

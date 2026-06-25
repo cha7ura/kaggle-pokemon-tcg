@@ -73,10 +73,26 @@ def _leaf_value(obs_after, seat, opp_hp_before, myp_before):
         return -1.0
 
 
+def _my_prize_after(obs_after, seat):
+    try:
+        return len(obs_after.current.players[seat].prize or [])
+    except Exception:
+        return 99
+
+
+def _opp_hp_after(obs_after, seat):
+    try:
+        opp = obs_after.current.players[1 - seat]
+        return sum(p.hp for p in (list(opp.active or []) + list(opp.bench or [])) if p)
+    except Exception:
+        return 10 ** 9
+
+
 def best_option(obs_dict, seat, deck):
-    """For an ATTACK selection, pick the option that deals the most real damage / takes prizes,
-    by simulating each one ply with the engine (exact, vs threat.py's estimate). Returns an option
-    index, or None when not applicable (not an attack choice / no engine / not a live obs)."""
+    """For an ATTACK selection, override the model ONLY to SECURE A KO: simulate each option and
+    return the one that takes a prize (real KO, exact via the engine). If no option KOs, return
+    None and defer to the learned policy — 'max damage now' greed hurts control decks (Trevenant),
+    but taking a guaranteed KO is always correct. None when not applicable (no engine / not live)."""
     sel = obs_dict.get("select"); cur = obs_dict.get("current")
     if not sel or not cur or not obs_dict.get("search_begin_input"):
         return None
@@ -93,18 +109,19 @@ def best_option(obs_dict, seat, deck):
         obs_obj = cg.to_observation_class(obs_dict)
         opp_before = _opp_hp_dict(obs_dict, seat)
         myp_before = _my_prize_dict(obs_dict, seat)
-        best_i, best_v = None, -1e18
+        best_i, best_prizes, best_dmg = None, 0, 0
         for i in range(len(opts)):
             ss = cg.search_begin(obs_obj, yd, yp, od, op, oh, oa)
             nxt = cg.search_step(ss.searchId, [i])
-            v = _leaf_value(nxt.observation, seat, opp_before, myp_before)
+            prizes = max(0, myp_before - _my_prize_after(nxt.observation, seat))
+            dmg = max(0, opp_before - _opp_hp_after(nxt.observation, seat))
             try:
                 cg.search_release(ss.searchId)
             except Exception:
                 pass
-            if v > best_v:
-                best_v, best_i = v, i
-        return best_i
+            if (prizes, dmg) > (best_prizes, best_dmg):
+                best_prizes, best_dmg, best_i = prizes, dmg, i
+        return best_i if best_prizes > 0 else None     # only override to SECURE a KO
     except Exception:
         return None
 
