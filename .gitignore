@@ -18,6 +18,7 @@ replays.sqlite
 backfill.log
 backfill_manifest.csv
 field_rebuild.log
+field_table.log
 .backfill_state
 .backfill_done
 tools/imitation/data/decisions.npz
