@@ -7,12 +7,36 @@ pull()+ingest-with-delete (peak disk ~one 4MB file). Disk-guarded for the tight 
 The whole day is ~21GB raw; we stream a capped sample (the day's avg Elo is high, so games are
 strong). Winner-filtering happens later at decision extraction.
 """
-import sys, os, datetime, shutil
+import sys, os, datetime, shutil, subprocess, threading
+from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fetch_dataset as fd
+from tools import replays_db
 from kaggle.api.kaggle_api_extended import KaggleApi
 
-MIN_FREE_GB = 0.8
+MIN_FREE_GB = 1.0
+_LOCK = threading.Lock()           # sqlite single-writer: serialize ingests across download workers
+
+
+def _download(ep, day):
+    """Download one episode json (parallel-safe; no db). Returns path or None."""
+    if replays_db.has(ep):
+        return "dup"
+    p = f"{fd.TMP}/{ep}.json"
+    for delta in (0, -1, 1):
+        d = day + datetime.timedelta(days=delta)
+        try:
+            subprocess.run(["kaggle", "datasets", "download", f"{fd.DS}{d}", "-f", f"{ep}.json",
+                            "-p", fd.TMP], capture_output=True, text=True, timeout=120)
+        except subprocess.TimeoutExpired:
+            continue
+        z = f"{p}.zip"
+        if os.path.exists(z):
+            subprocess.run(["unzip", "-o", z, "-d", fd.TMP], capture_output=True); os.remove(z)
+        if os.path.exists(p):
+            return p
+    return None
 
 
 def free_gb():
@@ -46,19 +70,34 @@ def main():
     os.makedirs(fd.TMP, exist_ok=True)
     print(f"enumerating {day_s} (cap {cap})...", flush=True)
     ids = enum_ids(day_s, cap)
-    print(f"got {len(ids)} episode ids; free disk {free_gb():.1f}GB", flush=True)
-    got = skip = 0
-    for i, ep in enumerate(ids, 1):
+    workers = int(sys.argv[3]) if len(sys.argv) > 3 else 12
+    print(f"got {len(ids)} episode ids; {workers} workers; free disk {free_gb():.1f}GB", flush=True)
+    ctr = {"new": 0, "dup": 0, "miss": 0, "done": 0}
+    stop = threading.Event()
+
+    def work(ep):
+        if stop.is_set():
+            return
         if free_gb() < MIN_FREE_GB:
-            print(f"STOP: low disk ({free_gb():.1f}GB)", flush=True); break
-        r = fd.pull(ep, day, "leader")
-        if r is True:
-            got += 1
-        elif r is False:
-            skip += 1
-        if i % 100 == 0:
-            print(f"  {i}/{len(ids)}: +{got} new, {skip} dup, free {free_gb():.1f}GB", flush=True)
-    print(f"DONE {day_s}: +{got} new games, {skip} dup, free {free_gb():.1f}GB", flush=True)
+            stop.set(); return
+        r = _download(ep, day)
+        with _LOCK:
+            ctr["done"] += 1
+            if r == "dup":
+                ctr["dup"] += 1
+            elif r:
+                replays_db.ingest_file(r, source="leader", delete=True)   # locked: single sqlite writer
+                ctr["new"] += 1
+            else:
+                ctr["miss"] += 1
+            if ctr["done"] % 100 == 0:
+                print(f"  {ctr['done']}/{len(ids)}: +{ctr['new']} new, {ctr['dup']} dup, "
+                      f"{ctr['miss']} miss, free {free_gb():.1f}GB", flush=True)
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        list(ex.map(work, ids))
+    print(f"DONE {day_s}: +{ctr['new']} new, {ctr['dup']} dup, {ctr['miss']} miss, "
+          f"free {free_gb():.1f}GB", flush=True)
 
 
 if __name__ == "__main__":

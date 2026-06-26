@@ -15,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TMP = os.path.join(ROOT, ".fetch_tmp")  # scratch for the kaggle CLI; emptied per file
 OUR_SUBS = [53880887, 53892473]
 TOP_SEEDS = [53802029, 53880887, 53878567]
-MIN_SCORE = 1100
+MIN_SCORE = 1000   # keep episode if AT LEAST ONE agent Elo >= this (max-filter)
 DS = "kaggle/pokemon-tcg-ai-battle-episodes-"
 
 
@@ -79,7 +79,7 @@ def main():
         seen.add(s)
         for e in enum_safe(s).get("episodes", []):
             scs = [a.get("updatedScore", 0) for a in e.get("agents", [])]
-            if (min(scs) if scs else 0) >= MIN_SCORE:
+            if (max(scs) if scs else 0) >= MIN_SCORE:   # at least one player >= 1000
                 ep_day[e["id"]] = day_of(e["createTime"])
             for a in e.get("agents", []):
                 sid = a.get("submissionId")
