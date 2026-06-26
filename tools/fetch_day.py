@@ -27,8 +27,9 @@ def _download(ep, day):
     for delta in (0, -1, 1):
         d = day + datetime.timedelta(days=delta)
         try:
-            subprocess.run(["kaggle", "datasets", "download", f"{fd.DS}{d}", "-f", f"{ep}.json",
-                            "-p", fd.TMP], capture_output=True, text=True, timeout=120)
+            subprocess.run([sys.executable, "-m", "kaggle.cli", "datasets", "download",
+                            f"{fd.DS}{d}", "-f", f"{ep}.json", "-p", fd.TMP],
+                           capture_output=True, text=True, timeout=120)
         except subprocess.TimeoutExpired:
             continue
         z = f"{p}.zip"

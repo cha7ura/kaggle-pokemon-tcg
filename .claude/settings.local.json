@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:arxiv.org)",
+      "Skill(deep-research)",
+      "Workflow(deep-research)",
+      "WebFetch(domain:deepmind.google)",
+      "Bash(git checkout *)",
+      "WebSearch",
+      "Bash(kaggle competitions *)"
+    ]
+  }
+}
