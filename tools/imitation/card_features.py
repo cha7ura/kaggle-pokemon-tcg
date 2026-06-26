@@ -76,6 +76,37 @@ def card_vector(card_id):
     return [d.get(k, 0.0) for k in FEATURE_NAMES]
 
 
+def card_raw(card_id):
+    return _cards().get(card_id)
+
+
+_SCALE_IDX = {"none": 0, "per_energy_self": 1, "per_energy_both": 2, "per_hand_card": 3,
+              "on_ko_last_turn": 4, "on_opp_prizes": 5, "on_my_prizes": 6, "per_bench": 7,
+              "per_damaged": 8, "coinflip": 9, "other": 10}
+
+
+@functools.lru_cache(maxsize=1)
+def _attacks_by_id():
+    m = {}
+    for r in _cards().values():
+        for a in (r.get("attacks") or []):
+            if a.get("attack_id") is not None:
+                m[a["attack_id"]] = a
+    return m
+
+
+def attack(attack_id):
+    """Per-attack features for an ATTACK option: [is_attack, damage_base, n_cost, scaling_idx, spread]."""
+    a = _attacks_by_id().get(attack_id)
+    if not a:
+        return [0.0, 0.0, 0.0, 0.0, 0.0]
+    return [1.0, float(a.get("damage_base", 0) or 0), float(len(a.get("energy_cost") or [])),
+            float(_SCALE_IDX.get(a.get("scaling_basis", "none"), 0)), float(a.get("spread_amount", 0) or 0)]
+
+
+ATTACK_DIM = 5
+
+
 @functools.lru_cache(maxsize=1)
 def evolution_graph():
     """{name: {stage, pre, nexts}} keyed by Pokemon name (evolves_from is a name)."""

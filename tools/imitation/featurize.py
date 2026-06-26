@@ -48,7 +48,128 @@ STATE_NAMES = [
     # --- trajectory / recent-history (from obs.logs; on my turn this spans the opponent's last turn) ---
     "log_opp_attacked", "log_dmg_to_me", "log_dmg_to_opp", "log_my_ko", "log_opp_ko",
     "log_my_plays", "log_my_evolves", "log_my_attaches", "log_status_on_me", "log_coins",
+    # --- setup: is the deck's PAYOFF attacker online? (the Dragapult-setup gap) ---
+    "key_in_play", "key_ready", "key_in_hand", "key_line_started", "can_rare_candy",
+    "evo_pieces_in_hand", "setup_behind",
+    # --- NEW: weakness match, opp status, prize values, hand composition ---
+    "we_hit_opp_weakness", "opp_hits_our_weakness",
+    "opp_asleep", "opp_paralyzed", "opp_confused", "opp_poisoned", "opp_burned",
+    "my_active_prize", "opp_active_prize",
+    "hand_n_pokemon", "hand_n_energy", "hand_n_trainer", "hand_n_supporter", "hand_n_evolution",
 ]
+
+
+def extra_features(obs, seat):
+    """Weakness-match, opponent status, prize values, hand composition (all observable)."""
+    from . import card_features
+    cur = obs.get("current") or {}
+    pl = cur.get("players") or [{}, {}]
+    me, opp = pl[seat], pl[1 - seat]
+    ma, oa = _active(me), _active(opp)
+    mc = card_features.card_raw((ma or {}).get("id")) or {}
+    oc = card_features.card_raw((oa or {}).get("id")) or {}
+    we_hit = 1.0 if (mc.get("energy_type") and mc.get("energy_type") == oc.get("weakness")) else 0.0
+    opp_hit = 1.0 if (oc.get("energy_type") and oc.get("energy_type") == mc.get("weakness")) else 0.0
+    hp = collections_counter_hand(me, card_features)
+    return {
+        "we_hit_opp_weakness": we_hit, "opp_hits_our_weakness": opp_hit,
+        "opp_asleep": 1.0 if opp.get("asleep") else 0.0,
+        "opp_paralyzed": 1.0 if opp.get("paralyzed") else 0.0,
+        "opp_confused": 1.0 if opp.get("confused") else 0.0,
+        "opp_poisoned": 1.0 if opp.get("poisoned") else 0.0,
+        "opp_burned": 1.0 if opp.get("burned") else 0.0,
+        "my_active_prize": float(mc.get("prize_value") or 0),
+        "opp_active_prize": float(oc.get("prize_value") or 0),
+        **hp,
+    }
+
+
+def collections_counter_hand(me, card_features):
+    n = dict(hand_n_pokemon=0.0, hand_n_energy=0.0, hand_n_trainer=0.0, hand_n_supporter=0.0,
+             hand_n_evolution=0.0)
+    for c in (me.get("hand") or []):
+        if not c:
+            continue
+        r = card_features.card_raw(c.get("id")) or {}
+        ct = r.get("card_type")
+        if ct == "POKEMON":
+            n["hand_n_pokemon"] += 1
+            if r.get("stage") in ("STAGE1", "STAGE2"):
+                n["hand_n_evolution"] += 1
+        elif ct in ("BASIC_ENERGY", "SPECIAL_ENERGY"):
+            n["hand_n_energy"] += 1
+        elif ct == "SUPPORTER":
+            n["hand_n_trainer"] += 1; n["hand_n_supporter"] += 1
+        elif ct in ("ITEM", "STADIUM", "TOOL"):
+            n["hand_n_trainer"] += 1
+    return n
+
+RARE_CANDY = 1079
+_KEY_CACHE = {}
+
+
+def _key_attacker(deck):
+    """The deck's payoff attacker = Pokemon with the highest base attack damage (Dragapult ex=200,
+    Alakazam, Trevenant...). Cached per deck."""
+    from . import card_features
+    k = tuple(sorted(set(deck)))
+    if k in _KEY_CACHE:
+        return _KEY_CACHE[k]
+    cards = card_features._cards()
+    best, bd = None, -1
+    for cid in k:
+        r = cards.get(cid)
+        if r and r.get("card_type") == "POKEMON" and r.get("attacks"):
+            d = max((a.get("damage_base", 0) or 0) for a in r["attacks"])
+            if d > bd:
+                bd, best = d, cid
+    _KEY_CACHE[k] = best
+    return best
+
+
+def setup_features(obs, seat, deck):
+    from . import card_features
+    cards = card_features._cards()
+    me = (obs.get("current") or {}).get("players", [{}, {}])[seat]
+    key = _key_attacker(deck)
+    kr = cards.get(key) or {}
+    inplay = [p for p in (me.get("active") or []) if p] + [p for p in (me.get("bench") or []) if p]
+    inplay_ids = {p.get("id") for p in inplay}
+    hand_ids = [c.get("id") for c in (me.get("hand") or []) if c]
+    # the key line's basic (walk evolves_from back to a basic)
+    line, cur = set(), kr
+    while cur:
+        line.add(cur.get("card_id") if "card_id" in cur else None)
+        pre = cur.get("evolves_from")
+        cur = next((c for c in cards.values() if c.get("name") == pre and c.get("card_type") == "POKEMON"),
+                   None) if pre else None
+    line_basic = next((cid for cid in line if cid and (cards.get(cid) or {}).get("stage") == "BASIC"), None)
+    key_in_play = key in inplay_ids
+    # key ready: in play + enough energy for its best attack
+    key_ready = False
+    if key_in_play:
+        kp = next((p for p in inplay if p.get("id") == key), None)
+        need = min((len(a.get("energy_cost") or []) for a in (kr.get("attacks") or []) if a.get("damage_base")),
+                   default=99)
+        key_ready = kp is not None and len(kp.get("energies") or []) >= need
+    can_rc = (line_basic in inplay_ids) and (key in hand_ids) and (RARE_CANDY in hand_ids)
+    # evolution pieces in hand that evolve something in play
+    evo_pieces = 0
+    for cid in hand_ids:
+        r = cards.get(cid)
+        if r and r.get("evolves_from"):
+            if any((cards.get(p) or {}).get("name") == r["evolves_from"] for p in inplay_ids):
+                evo_pieces += 1
+    turn = (obs.get("current") or {}).get("turn", 0)
+    return {
+        "key_in_play": 1.0 if key_in_play else 0.0,
+        "key_ready": 1.0 if key_ready else 0.0,
+        "key_in_hand": 1.0 if key in hand_ids else 0.0,
+        "key_line_started": 1.0 if (line_basic in inplay_ids or key_in_play) else 0.0,
+        "can_rare_candy": 1.0 if can_rc else 0.0,
+        "evo_pieces_in_hand": float(evo_pieces),
+        "setup_behind": 1.0 if (turn >= 4 and not key_ready) else 0.0,
+    }
 
 # LogType / AreaType ids
 _L_MOVE, _L_PLAY, _L_ATTACH, _L_EVOLVE, _L_ATTACK, _L_HP = 6, 10, 11, 12, 15, 16
@@ -157,6 +278,8 @@ def state_row(obs, seat, decklist, ko_last_turn=False):
         "ko_last_turn": 1.0 if ko_last_turn else 0.0,
     }
     v.update(lf)
+    v.update(setup_features(obs, seat, decklist))
+    v.update(extra_features(obs, seat))
     return [float(v[k]) for k in STATE_NAMES], STATE_NAMES
 
 
@@ -164,7 +287,8 @@ def state_row(obs, seat, decklist, ko_last_turn=False):
 OPTION_META = ["context", "opt_type", "opt_area", "opt_index", "opt_number", "opt_count",
                "n_options", "min_count", "max_count", "remain_damage_counter", "remain_energy_cost",
                "target_hp_remaining", "creates_imminent_ko", "draw_prob_card", "needed_in_discard"]
-OPTION_NAMES = OPTION_META + ["opt_" + n for n in card_features.FEATURE_NAMES]
+OPT_ATTACK_NAMES = ["opt_atk_is", "opt_atk_dmg", "opt_atk_cost", "opt_atk_scale", "opt_atk_spread"]
+OPTION_NAMES = OPTION_META + ["opt_" + n for n in card_features.FEATURE_NAMES] + OPT_ATTACK_NAMES
 
 
 def option_row(obs, seat, option, decklist):
@@ -198,6 +322,7 @@ def option_row(obs, seat, option, decklist):
     }
     vec = [float(meta[k]) for k in OPTION_META]
     vec += card_features.card_vector(cid) if cid else [0.0] * len(card_features.FEATURE_NAMES)
+    vec += card_features.attack(o.get("attackId"))   # per-attack features (distinguish attack A vs B)
     return vec, OPTION_NAMES
 
 
