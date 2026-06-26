@@ -14,6 +14,12 @@ json_ours/
 tools/imitation/data/
 replays.sqlite
 .fetch_tmp/
+# backfill runtime artifacts (local state/logs, not code)
+backfill.log
+backfill_manifest.csv
+field_rebuild.log
+.backfill_state
+.backfill_done
 tools/imitation/data/decisions.npz
 tools/imitation/data/card_policy.json
 submission_cardpolicy_trev.tar.gz
