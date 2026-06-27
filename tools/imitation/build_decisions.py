@@ -17,9 +17,12 @@ DATA = os.path.join(os.path.dirname(__file__), "data")
 
 
 def _winner_seat(rewards):
-    if not rewards or len(rewards) < 2 or rewards[0] == rewards[1]:
-        return None                      # draw or missing -> skip (winner-filter)
-    return 0 if rewards[0] > rewards[1] else 1
+    if not rewards or len(rewards) < 2:
+        return None
+    r0, r1 = rewards[0], rewards[1]
+    if r0 is None or r1 is None or r0 == r1:   # some bulk replays have null rewards -> skip
+        return None
+    return 0 if r0 > r1 else 1
 
 
 def iter_rows(game, gid):

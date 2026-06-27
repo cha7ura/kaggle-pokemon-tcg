@@ -25,3 +25,7 @@ tools/imitation/data/decisions.npz
 tools/imitation/data/card_policy.json
 submission_cardpolicy_trev.tar.gz
 trev_policy.log
+redo_cardpolicy.log
+redo_perdeck.log
+redo_value.log
+decisions_all.npz
