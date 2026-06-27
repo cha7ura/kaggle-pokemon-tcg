@@ -60,16 +60,28 @@ def iter_rows(game, gid):
 def main():
     limit = None
     out = os.path.join(DATA, "decisions.npz")
+    archetype = None
     if "--limit" in sys.argv:
         limit = int(sys.argv[sys.argv.index("--limit") + 1])
     if "--out" in sys.argv:
         out = sys.argv[sys.argv.index("--out") + 1]
+    if "--archetype" in sys.argv:
+        archetype = sys.argv[sys.argv.index("--archetype") + 1]
     os.makedirs(DATA, exist_ok=True)
+
+    # Deck-matched policy: restrict to games the WINNER played with `archetype` (via the
+    # replay_field/v_episode_arch SQL pipeline). SQLite filters before any blob is decompressed.
+    where = params = None
+    if archetype:
+        where = ("episode_id IN (SELECT episode_id FROM v_episode_arch "
+                 "WHERE (reward0>reward1 AND arch0=?) OR (reward1>reward0 AND arch1=?))")
+        params = (archetype, archetype)
+        print(f"deck-matched: winner-archetype = {archetype}", flush=True)
 
     X, y, groups, names = [], [], [], None
     gi, used = 0, 0
     t0 = time.time()
-    for ep, g in iter_replays():
+    for ep, g in (iter_replays(where, params) if where else iter_replays()):
         gi += 1
         if limit and gi > limit:
             break
