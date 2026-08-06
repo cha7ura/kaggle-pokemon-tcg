@@ -12,11 +12,28 @@ decompressing. Raw JSON is kept as a zlib-compressed blob.
 Reader API (import this module):
   for ep_id, game in iter_replays():  ...      # game = decompressed dict
 """
-import json, glob, os, sys, sqlite3, zlib, csv, time
+import json, glob, os, sys, sqlite3, zlib, lzma, csv, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = f"{ROOT}/replays.sqlite"
 JSON_DIR = f"{ROOT}/json"
+
+# Blob codec: replays are stored as either lzma/xz (new, ~6x smaller) or legacy zlib.
+# Decompress auto-detects by the xz stream magic so both coexist (during/after migration).
+# lzma is stdlib -> works on the Windows host AND inside the linux/amd64 Docker engine image.
+_XZ_MAGIC = b"\xfd7zXZ\x00"
+
+
+def _decompress(blob):
+    """Decompress a replay blob, auto-detecting codec (lzma/xz new, zlib legacy)."""
+    if blob[:6] == _XZ_MAGIC:
+        return lzma.decompress(blob)
+    return zlib.decompress(blob)
+
+
+def _compress(raw):
+    """Compress raw json bytes for storage: lzma preset 9|EXTREME (smallest)."""
+    return lzma.compress(raw, preset=9 | lzma.PRESET_EXTREME)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS replays (
@@ -73,8 +90,8 @@ def ingest_file(path, source="leader", delete=True):
     ep = os.path.splitext(os.path.basename(path))[0]
     with open(path, "rb") as fh:
         raw = fh.read()
-    blob = zlib.compress(raw, 6)
-    assert zlib.decompress(blob) == raw, f"roundtrip failed {ep}"
+    blob = _compress(raw)
+    assert _decompress(blob) == raw, f"roundtrip failed {ep}"
     t0, t1, r0, r1 = _meta(raw)
     db = _connect()
     new = db.execute("SELECT 1 FROM replays WHERE episode_id=?", (ep,)).fetchone() is None
@@ -132,7 +149,7 @@ def iter_replays(where=None, params=()):
     if where:
         q += f" WHERE {where}"
     for ep, blob in db.execute(q, params):
-        yield ep, json.loads(zlib.decompress(blob))
+        yield ep, json.loads(_decompress(blob))
     db.close()
 
 

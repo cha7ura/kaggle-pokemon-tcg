@@ -18,6 +18,41 @@ def _arg(flag, default, cast=str):
     return cast(sys.argv[sys.argv.index(flag) + 1]) if flag in sys.argv else default
 
 
+def load_dataset(path, max_rows=0):
+    """Load X/y/groups/names from either a single .npz (legacy) OR a sharded build.
+
+    A sharded build_decisions run writes {prefix}_NNNN.npz shards + {prefix}_manifest.json.
+    Pass the manifest path, or the prefix (we look for {prefix}_manifest.json alongside it).
+    Shards are flushed at GAME boundaries, so no decision-group spans two shards -> truncating
+    whole shards at `max_rows` keeps every decision intact for the group-wise held-out split.
+    max_rows>0 caps peak memory on the full 88k corpus (~33M rows / 17GB dense would OOM the
+    subsequent X[tr] fancy-index copy)."""
+    man_path = None
+    if path.endswith("_manifest.json"):
+        man_path = path
+    elif not path.endswith(".npz") and os.path.exists(path + "_manifest.json"):
+        man_path = path + "_manifest.json"
+    if man_path is None:                              # legacy single-npz path
+        z = np.load(path, allow_pickle=True)
+        return z["X"], z["y"], z["groups"], list(z["names"])
+
+    man = json.load(open(man_path, encoding="utf-8"))
+    base = os.path.dirname(man_path)
+    Xs, ys, gs, total = [], [], [], 0
+    for sh in man["shards"]:
+        z = np.load(os.path.join(base, sh["file"]), allow_pickle=True)
+        Xs.append(z["X"]); ys.append(z["y"]); gs.append(z["groups"])
+        total += len(z["X"])
+        if max_rows and total >= max_rows:
+            print(f"  row cap {max_rows} reached after {len(Xs)}/{len(man['shards'])} shards", flush=True)
+            break
+    X = np.concatenate(Xs); y = np.concatenate(ys); groups = np.concatenate(gs)
+    del Xs, ys, gs
+    print(f"loaded {len(man['shards']) if not max_rows else 'capped'} shard set: "
+          f"{X.shape[0]} rows from {man_path}", flush=True)
+    return X, y, groups, list(man["names"])
+
+
 def export_forest(rf, names):
     """Each tree -> flat arrays; leaf value = P(class 1). Walked in pure python/numpy at inference."""
     trees = []
@@ -70,8 +105,8 @@ DROP = {"opt_index", "opt_type", "opt_area", "n_options"}
 
 
 def main():
-    npz = np.load(_arg("--in", os.path.join(DATA, "decisions.npz"), str), allow_pickle=True)
-    X, y, groups, allnames = npz["X"], npz["y"], npz["groups"], list(npz["names"])
+    X, y, groups, allnames = load_dataset(_arg("--in", os.path.join(DATA, "decisions.npz"), str),
+                                          max_rows=_arg("--max-rows", 0, int))
     keep = [i for i, n in enumerate(allnames) if n not in DROP]
     names = [allnames[i] for i in keep]
     X = X[:, keep]

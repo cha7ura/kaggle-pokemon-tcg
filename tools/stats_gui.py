@@ -7,11 +7,13 @@ Endpoints: / (page), /api/summary, /api/matchups, /api/field, /api/policies.
 ponytail: http.server + sqlite3, one file. Swap for a real framework only if this
 needs auth, write paths, or many concurrent users.
 """
-import json, os, sqlite3, sys, zlib, collections, csv
+import json, os, sqlite3, sys, collections, csv
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = f"{ROOT}/replays.sqlite"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from replays_db import _decompress                    # shared blob codec (lzma/xz new, zlib legacy)
 US = "The Debauchery Tea Party"
 
 # archetype signature (same mapping as extract_field)
@@ -54,7 +56,7 @@ def matchups():
     db = _db()
     W = collections.Counter(); N = collections.Counter()
     for r0, r1, blob in db.execute("SELECT reward0,reward1,blob FROM replays WHERE source='ours'"):
-        g = json.loads(zlib.decompress(blob)); tn = g.get("info", {}).get("TeamNames", ["", ""])
+        g = json.loads(_decompress(blob)); tn = g.get("info", {}).get("TeamNames", ["", ""])
         if US not in tn: continue
         me = 0 if tn[0] == US else 1; opp = 1 - me
         odeck = next((s[opp]["action"] for s in g["steps"]

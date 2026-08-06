@@ -7,7 +7,7 @@ pull()+ingest-with-delete (peak disk ~one 4MB file). Disk-guarded for the tight 
 The whole day is ~21GB raw; we stream a capped sample (the day's avg Elo is high, so games are
 strong). Winner-filtering happens later at decision extraction.
 """
-import sys, os, datetime, shutil, subprocess, threading
+import sys, os, time, datetime, shutil, subprocess, threading
 from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,12 +44,30 @@ def free_gb():
     return shutil.disk_usage(".").free / 1e9
 
 
+def _list_files(api, slug, token):
+    """dataset_list_files with 429 backoff. 404 (no dataset) -> None (empty day, legit stop);
+    other errors re-raise so a real failure isn't mistaken for an empty day."""
+    for a in range(6):
+        try:
+            return api.dataset_list_files(slug, page_token=token, page_size=200)
+        except Exception as e:
+            s = str(e)
+            if "404" in s:
+                return None
+            if "429" in s:
+                time.sleep(10 * (a + 1)); continue  # ponytail: linear backoff, plenty for Kaggle's limiter
+            raise
+    raise RuntimeError(f"429 persisted after retries: {slug}")
+
+
 def enum_ids(day, cap):
     api = KaggleApi(); api.authenticate()
     slug = f"kaggle/pokemon-tcg-ai-battle-episodes-{day}"
     ids, token = [], None
     while len(ids) < cap:
-        r = api.dataset_list_files(slug, page_token=token, page_size=200)
+        r = _list_files(api, slug, token)
+        if r is None:
+            break
         files = getattr(r, "files", None) or []
         if not files:
             break

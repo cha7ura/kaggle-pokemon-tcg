@@ -9,11 +9,13 @@ After this, the meta map is pure SQL, e.g.:
   SELECT archetype, COUNT(*) FROM replay_field GROUP BY archetype ORDER BY 2 DESC;
   SELECT deck_sig, archetype, COUNT(*) c, MAX(team) FROM replay_field GROUP BY deck_sig ORDER BY c DESC LIMIT 20;
 """
-import os, sys, csv, json, zlib, sqlite3, time
+import os, sys, csv, json, sqlite3, time
 from concurrent.futures import ProcessPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = f"{ROOT}/replays.sqlite"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from replays_db import _decompress                    # shared blob codec (lzma/xz new, zlib legacy)
 WORKERS = max(2, (os.cpu_count() or 4) - 1)
 CHUNKS = WORKERS * 6                                  # more chunks than workers = better load balance
 
@@ -60,7 +62,7 @@ def process_chunk(bounds):
     out = []
     for ep, blob in db.execute("SELECT episode_id, blob FROM replays WHERE rowid BETWEEN ? AND ?", (lo, hi)):
         try:
-            d = json.loads(zlib.decompress(blob))
+            d = json.loads(_decompress(blob))
         except Exception:
             continue
         teams = d.get("info", {}).get("TeamNames", ["?", "?"])
