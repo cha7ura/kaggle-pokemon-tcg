@@ -1,0 +1,288 @@
+{
+ "archetypes": [
+  "SolrockLun",
+  "OTHER",
+  "Alakazam",
+  "HopTrev",
+  "Dragapult",
+  "MegaStarmie",
+  "ToolboxEx",
+  "Archaludon"
+ ],
+ "share": {
+  "SolrockLun": 34614,
+  "OTHER": 27342,
+  "Alakazam": 22036,
+  "HopTrev": 19092,
+  "Dragapult": 7082,
+  "MegaStarmie": 5032,
+  "ToolboxEx": 1471,
+  "Archaludon": 1099
+ },
+ "matrix": {
+  "SolrockLun": {
+   "SolrockLun": [
+    5986,
+    11972
+   ],
+   "OTHER": [
+    4422,
+    8058
+   ],
+   "Alakazam": [
+    2486,
+    6213
+   ],
+   "HopTrev": [
+    1228,
+    4621
+   ],
+   "Dragapult": [
+    955,
+    1629
+   ],
+   "MegaStarmie": [
+    677,
+    1150
+   ],
+   "ToolboxEx": [
+    244,
+    416
+   ],
+   "Archaludon": [
+    78,
+    235
+   ]
+  },
+  "OTHER": {
+   "SolrockLun": [
+    3636,
+    8058
+   ],
+   "OTHER": [
+    5430,
+    10860
+   ],
+   "Alakazam": [
+    1508,
+    3312
+   ],
+   "HopTrev": [
+    878,
+    1859
+   ],
+   "Dragapult": [
+    943,
+    1672
+   ],
+   "MegaStarmie": [
+    250,
+    687
+   ],
+   "ToolboxEx": [
+    282,
+    517
+   ],
+   "Archaludon": [
+    44,
+    115
+   ]
+  },
+  "Alakazam": {
+   "SolrockLun": [
+    3727,
+    6213
+   ],
+   "OTHER": [
+    1804,
+    3312
+   ],
+   "Alakazam": [
+    2460,
+    4920
+   ],
+   "HopTrev": [
+    2271,
+    4776
+   ],
+   "Dragapult": [
+    564,
+    1240
+   ],
+   "MegaStarmie": [
+    456,
+    986
+   ],
+   "ToolboxEx": [
+    88,
+    171
+   ],
+   "Archaludon": [
+    131,
+    213
+   ]
+  },
+  "HopTrev": {
+   "SolrockLun": [
+    3393,
+    4621
+   ],
+   "OTHER": [
+    981,
+    1859
+   ],
+   "Alakazam": [
+    2505,
+    4776
+   ],
+   "HopTrev": [
+    2532,
+    5064
+   ],
+   "Dragapult": [
+    240,
+    1155
+   ],
+   "MegaStarmie": [
+    275,
+    998
+   ],
+   "ToolboxEx": [
+    55,
+    111
+   ],
+   "Archaludon": [
+    45,
+    256
+   ]
+  },
+  "Dragapult": {
+   "SolrockLun": [
+    674,
+    1629
+   ],
+   "OTHER": [
+    729,
+    1672
+   ],
+   "Alakazam": [
+    676,
+    1240
+   ],
+   "HopTrev": [
+    915,
+    1155
+   ],
+   "Dragapult": [
+    299,
+    598
+   ],
+   "MegaStarmie": [
+    188,
+    450
+   ],
+   "ToolboxEx": [
+    76,
+    131
+   ],
+   "Archaludon": [
+    41,
+    104
+   ]
+  },
+  "MegaStarmie": {
+   "SolrockLun": [
+    473,
+    1150
+   ],
+   "OTHER": [
+    437,
+    687
+   ],
+   "Alakazam": [
+    530,
+    986
+   ],
+   "HopTrev": [
+    723,
+    998
+   ],
+   "Dragapult": [
+    262,
+    450
+   ],
+   "MegaStarmie": [
+    255,
+    510
+   ],
+   "ToolboxEx": [
+    51,
+    64
+   ],
+   "Archaludon": [
+    27,
+    98
+   ]
+  },
+  "ToolboxEx": {
+   "SolrockLun": [
+    172,
+    416
+   ],
+   "OTHER": [
+    235,
+    517
+   ],
+   "Alakazam": [
+    83,
+    171
+   ],
+   "HopTrev": [
+    56,
+    111
+   ],
+   "Dragapult": [
+    55,
+    131
+   ],
+   "MegaStarmie": [
+    13,
+    64
+   ],
+   "ToolboxEx": [
+    18,
+    36
+   ]
+  },
+  "Archaludon": {
+   "SolrockLun": [
+    157,
+    235
+   ],
+   "OTHER": [
+    71,
+    115
+   ],
+   "Alakazam": [
+    82,
+    213
+   ],
+   "HopTrev": [
+    211,
+    256
+   ],
+   "Dragapult": [
+    63,
+    104
+   ],
+   "MegaStarmie": [
+    71,
+    98
+   ],
+   "Archaludon": [
+    27,
+    54
+   ]
+  }
+ }
+}

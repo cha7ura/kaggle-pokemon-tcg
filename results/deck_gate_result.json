@@ -1,0 +1,1024 @@
+{
+  "labelA": "V3_Fez_Shaymin",
+  "labelB": "Current",
+  "deckA": "autoresearch/decks/alakazam_v3.csv",
+  "deckB": "submission_alakazam_top/deck.csv",
+  "games": 200,
+  "A_wins": 72,
+  "B_wins": 128,
+  "draws": 0,
+  "errors": 0,
+  "A_winrate_pct": 36.0,
+  "seatwins": {
+    "0": [
+      34,
+      100
+    ],
+    "1": [
+      38,
+      100
+    ]
+  },
+  "per_game": [
+    {
+      "game": 0,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 1,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 2,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 3,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 4,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 5,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 6,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 7,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 8,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 9,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 10,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 11,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 12,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 13,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 14,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 15,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 16,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 17,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 18,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 19,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 20,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 21,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 22,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 23,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 24,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 25,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 26,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 27,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 28,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 29,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 30,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 31,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 32,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 33,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 34,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 35,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 36,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 37,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 38,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 39,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 40,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 41,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 42,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 43,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 44,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 45,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 46,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 47,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 48,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 49,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 50,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 51,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 52,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 53,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 54,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 55,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 56,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 57,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 58,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 59,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 60,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 61,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 62,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 63,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 64,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 65,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 66,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 67,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 68,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 69,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 70,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 71,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 72,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 73,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 74,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 75,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 76,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 77,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 78,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 79,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 80,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 81,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 82,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 83,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 84,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 85,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 86,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 87,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 88,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 89,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 90,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 91,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 92,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 93,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 94,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 95,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 96,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 97,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 98,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 99,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 100,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 101,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 102,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 103,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 104,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 105,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 106,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 107,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 108,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 109,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 110,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 111,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 112,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 113,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 114,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 115,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 116,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 117,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 118,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 119,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 120,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 121,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 122,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 123,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 124,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 125,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 126,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 127,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 128,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 129,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 130,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 131,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 132,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 133,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 134,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 135,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 136,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 137,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 138,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 139,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 140,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 141,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 142,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 143,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 144,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 145,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 146,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 147,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 148,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 149,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 150,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 151,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 152,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 153,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 154,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 155,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 156,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 157,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 158,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 159,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 160,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 161,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 162,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 163,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 164,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 165,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 166,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 167,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 168,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 169,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 170,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 171,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 172,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 173,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 174,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 175,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 176,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 177,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 178,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 179,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 180,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 181,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 182,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 183,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 184,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 185,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 186,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 187,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 188,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 189,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 190,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 191,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 192,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 193,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 194,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 195,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 196,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 197,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 198,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 199,
+      "a_seat": 1,
+      "winner": "B"
+    }
+  ]
+}

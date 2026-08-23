@@ -47,7 +47,7 @@ def free_gb():
 def _list_files(api, slug, token):
     """dataset_list_files with 429 backoff. 404 (no dataset) -> None (empty day, legit stop);
     other errors re-raise so a real failure isn't mistaken for an empty day."""
-    for a in range(6):
+    for a in range(8):
         try:
             return api.dataset_list_files(slug, page_token=token, page_size=200)
         except Exception as e:
@@ -55,12 +55,14 @@ def _list_files(api, slug, token):
             if "404" in s:
                 return None
             if "429" in s:
-                time.sleep(10 * (a + 1)); continue  # ponytail: linear backoff, plenty for Kaggle's limiter
+                time.sleep(15 * (a + 1)); continue  # ponytail: linear backoff 15..120s (~9min total) rides out 429 waves
             raise
     raise RuntimeError(f"429 persisted after retries: {slug}")
 
 
 def enum_ids(day, cap):
+    import socket
+    socket.setdefaulttimeout(60)                      # ponytail: enum HTTP has no timeout -> hangs under throttle; 60s cap
     api = KaggleApi(); api.authenticate()
     slug = f"kaggle/pokemon-tcg-ai-battle-episodes-{day}"
     ids, token = [], None

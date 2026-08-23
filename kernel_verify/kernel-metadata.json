@@ -1,0 +1,13 @@
+{
+  "id": "cha7ura/verify-alakazam-top",
+  "title": "verify-alakazam-top",
+  "code_file": "verify_alakazam_top.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": ["cha7ura/ptcg-alakazam-top-verify"],
+  "competition_sources": [],
+  "kernel_sources": []
+}

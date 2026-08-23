@@ -7,7 +7,7 @@ data/Card_ID*
 refs/
 sdk/cg/*.so
 sdk/cg/*.dll
-submission*/cg/
+submissions/bundles/*/cg/
 json/
 deck.csv
 json_ours/
@@ -15,17 +15,15 @@ tools/imitation/data/
 replays.sqlite
 .fetch_tmp/
 # backfill runtime artifacts (local state/logs, not code)
-backfill.log
+var/logs/
 backfill_manifest.csv
-field_rebuild.log
-field_table.log
 .backfill_state
 .backfill_done
 tools/imitation/data/decisions.npz
 tools/imitation/data/card_policy.json
-submission_cardpolicy_trev.tar.gz
-trev_policy.log
-redo_cardpolicy.log
-redo_perdeck.log
-redo_value.log
+submissions/archives/
 decisions_all.npz
+
+# tooling scratch
+.firecrawl/
+.pytest_cache/

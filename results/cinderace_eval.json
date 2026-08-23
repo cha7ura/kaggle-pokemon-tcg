@@ -1,0 +1,36 @@
+{
+  "deck": "cinderace_archaludon",
+  "replay_field_wr": 63.6,
+  "replay_games": 911,
+  "matchups": [
+    {
+      "match": "vs_Dragapult",
+      "A_winrate": 65.0,
+      "A": 65,
+      "B": 35,
+      "seat0": [
+        33,
+        50
+      ],
+      "seat1": [
+        32,
+        50
+      ]
+    },
+    {
+      "match": "vs_MegaStarmie",
+      "A_winrate": 43.0,
+      "A": 43,
+      "B": 57,
+      "seat0": [
+        22,
+        50
+      ],
+      "seat1": [
+        21,
+        50
+      ]
+    }
+  ],
+  "verdict": "do not ship - field-spread effect, loses to MegaStarmie"
+}

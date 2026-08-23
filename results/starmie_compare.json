@@ -1,0 +1,533 @@
+{
+  "labelA": "StarmieFroslass",
+  "labelB": "ShippedHybrid",
+  "deckA": "autoresearch/decks/starmie_froslass.csv",
+  "deckB": "submission_megastarmie/deck.csv",
+  "games": 100,
+  "A_wins": 54,
+  "B_wins": 46,
+  "draws": 0,
+  "errors": 0,
+  "A_winrate_pct": 54.0,
+  "seatwins": {
+    "0": [
+      27,
+      50
+    ],
+    "1": [
+      27,
+      50
+    ]
+  },
+  "per_game": [
+    {
+      "game": 0,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 1,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 2,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 3,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 4,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 5,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 6,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 7,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 8,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 9,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 10,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 11,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 12,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 13,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 14,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 15,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 16,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 17,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 18,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 19,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 20,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 21,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 22,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 23,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 24,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 25,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 26,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 27,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 28,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 29,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 30,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 31,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 32,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 33,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 34,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 35,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 36,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 37,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 38,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 39,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 40,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 41,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 42,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 43,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 44,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 45,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 46,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 47,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 48,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 49,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 50,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 51,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 52,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 53,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 54,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 55,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 56,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 57,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 58,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 59,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 60,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 61,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 62,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 63,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 64,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 65,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 66,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 67,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 68,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 69,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 70,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 71,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 72,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 73,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 74,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 75,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 76,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 77,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 78,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 79,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 80,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 81,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 82,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 83,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 84,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 85,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 86,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 87,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 88,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 89,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 90,
+      "a_seat": 0,
+      "winner": "A"
+    },
+    {
+      "game": 91,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 92,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 93,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 94,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 95,
+      "a_seat": 1,
+      "winner": "A"
+    },
+    {
+      "game": 96,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 97,
+      "a_seat": 1,
+      "winner": "B"
+    },
+    {
+      "game": 98,
+      "a_seat": 0,
+      "winner": "B"
+    },
+    {
+      "game": 99,
+      "a_seat": 1,
+      "winner": "A"
+    }
+  ],
+  "significance": {
+    "p_value": 0.484,
+    "ci95": [
+      44.2,
+      63.8
+    ],
+    "verdict": "not significant - variants statistically equivalent, no swap",
+    "games_for_p05": 597
+  }
+}

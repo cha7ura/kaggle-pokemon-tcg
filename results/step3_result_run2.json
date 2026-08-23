@@ -1,0 +1,531 @@
+{
+ "games": 100,
+ "sims": 48,
+ "depth": 12,
+ "deck": "lucario_meta.csv",
+ "seconds": 410.5,
+ "search_wins": 17,
+ "heuristic_wins": 83,
+ "draws": 0,
+ "errors": 0,
+ "search_winrate_pct": 17.0,
+ "gate_passed": false,
+ "verdict": "FAIL: search still not > heuristic -> deck selection remains the lever; skip self-play",
+ "per_game": [
+  {
+   "game": 0,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 1,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 2,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 3,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 4,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 5,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 6,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 7,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 8,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 9,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 10,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 11,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 12,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 13,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 14,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 15,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 16,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 17,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 18,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 19,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 20,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 21,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 22,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 23,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 24,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 25,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 26,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 27,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 28,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 29,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 30,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 31,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 32,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 33,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 34,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 35,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 36,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 37,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 38,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 39,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 40,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 41,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 42,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 43,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 44,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 45,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 46,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 47,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 48,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 49,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 50,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 51,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 52,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 53,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 54,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 55,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 56,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 57,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 58,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 59,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 60,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 61,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 62,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 63,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 64,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 65,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 66,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 67,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 68,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 69,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 70,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 71,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 72,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 73,
+   "search_seat": 1,
+   "winner": "search"
+  },
+  {
+   "game": 74,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 75,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 76,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 77,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 78,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 79,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 80,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 81,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 82,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 83,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 84,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 85,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 86,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 87,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 88,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 89,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 90,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 91,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 92,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 93,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 94,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 95,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 96,
+   "search_seat": 0,
+   "winner": "search"
+  },
+  {
+   "game": 97,
+   "search_seat": 1,
+   "winner": "heuristic"
+  },
+  {
+   "game": 98,
+   "search_seat": 0,
+   "winner": "heuristic"
+  },
+  {
+   "game": 99,
+   "search_seat": 1,
+   "winner": "search"
+  }
+ ],
+ "diag": {
+  "engage": 2860,
+  "defer": 717,
+  "rollout_ok": 137280,
+  "rollout_err": 0,
+  "last_err": "",
+  "fail_detail": {
+   "n_option": 7,
+   "action": [],
+   "minCount": 0,
+   "maxCount": 1,
+   "select_type": 1
+  },
+  "rollout_trunc": 45464
+ }
+}

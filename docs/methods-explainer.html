@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Actually Won — PTCG AI Battle Method Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Sans:wght@400;500;600&family=Azeret+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   THEME TOKENS — "Scoreboard"
+   Near-black ink, bone type, one molten accent.
+   Change these five values to reskin the deck.
+   =========================================== */
+:root{
+  --ink:#141210;          /* slide background */
+  --ink-2:#1A1714;        /* raised card surface */
+  --ink-3:#0D0B09;        /* recessed / code surface */
+  --bone:#EDE6D8;         /* primary type */
+  --bone-d:#B9AF9C;       /* secondary type */
+  --steel:#3A3630;        /* rules, borders, empty bars */
+  --steel-2:#5B534A;      /* muted bar fill, tertiary type */
+  --molten:#FF4D18;       /* the single accent */
+  --stage-bg:#070605;     /* letterbox surround */
+  --slide-bg:var(--ink);
+
+  --f-display:'Anton',sans-serif;
+  --f-body:'Instrument Sans',sans-serif;
+  --f-mono:'Azeret Mono',monospace;
+
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   (viewport-base.css, included in full)
+   =========================================== */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--stage-bg);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--stage-bg);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:var(--slide-bg);}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg);}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+.deck-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000;}
+@media print{
+  html,body{width:1920px;height:auto;overflow:visible;background:#fff;}
+  .deck-viewport{position:static;overflow:visible;background:#fff;}
+  .deck-stage{position:static;width:auto;height:auto;transform:none!important;background:none;}
+  .slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}
+  .slide:last-child{break-after:auto;page-break-after:auto;}
+  .deck-controls{display:none!important;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important;}
+}
+
+/* ===========================================
+   ATMOSPHERE — dot-matrix scoreboard texture
+   plus a single molten corner bloom.
+   =========================================== */
+.deck-stage::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(var(--bone) 1px,transparent 1px);background-size:16px 16px;opacity:.055;}
+.deck-stage::after{content:"";position:absolute;right:-260px;top:-260px;width:1000px;height:1000px;z-index:0;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,77,24,.14),transparent 62%);}
+
+/* ===========================================
+   SLIDE CHROME — header rail + footer
+   =========================================== */
+.hdr{position:absolute;top:0;left:0;right:0;height:96px;border-bottom:2px solid var(--steel);
+  display:flex;align-items:center;justify-content:space-between;padding:0 88px;z-index:4;
+  font-family:var(--f-mono);font-size:18px;letter-spacing:.24em;text-transform:uppercase;color:var(--bone-d);}
+.hdr .tag{color:var(--ink);background:var(--molten);padding:8px 18px;font-weight:600;letter-spacing:.18em;}
+.foot{position:absolute;left:88px;bottom:44px;z-index:4;font-family:var(--f-mono);font-size:16px;
+  letter-spacing:.2em;color:var(--steel-2);text-transform:uppercase;}
+.pgbar{position:absolute;left:0;bottom:0;height:5px;background:var(--molten);z-index:6;transition:width .45s var(--ease);}
+
+/* Content frame: everything lives between the rail and the footer. */
+.body{position:absolute;left:88px;right:88px;top:168px;bottom:96px;z-index:3;}
+
+/* ===========================================
+   TYPE SCALE
+   =========================================== */
+h1{font-family:var(--f-display);font-size:172px;line-height:.92;text-transform:uppercase;color:var(--bone);letter-spacing:.005em;}
+h1 .o{color:transparent;-webkit-text-stroke:3px var(--molten);}
+h2{font-family:var(--f-display);font-size:74px;line-height:.94;text-transform:uppercase;color:var(--bone);letter-spacing:.01em;}
+h2 .num{color:var(--molten);-webkit-text-stroke:0;margin-right:22px;}
+.lede{font-family:var(--f-body);font-size:27px;line-height:1.5;color:var(--bone-d);max-width:1500px;margin-top:22px;}
+.eyebrow{font-family:var(--f-mono);font-size:19px;letter-spacing:.32em;text-transform:uppercase;color:var(--molten);margin-bottom:26px;}
+
+/* ===========================================
+   COMPONENTS
+   =========================================== */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:44px;}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:44px;}
+.cols-73{display:grid;grid-template-columns:1.35fr 1fr;gap:48px;margin-top:44px;}
+
+.card{background:var(--ink-2);border:2px solid var(--steel);padding:30px 34px;}
+.card.hot{border-color:var(--molten);}
+.card h3{font-family:var(--f-mono);font-size:17px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--molten);margin-bottom:18px;}
+.card.dim h3{color:var(--bone-d);}
+.card p{font-family:var(--f-body);font-size:24px;line-height:1.5;color:var(--bone-d);}
+.card p+p{margin-top:14px;}
+.card b{color:var(--bone);font-weight:600;}
+.card ul{list-style:none;}
+.card li{font-family:var(--f-body);font-size:23px;line-height:1.45;color:var(--bone-d);padding-left:26px;position:relative;margin-bottom:13px;}
+.card li:last-child{margin-bottom:0;}
+.card li::before{content:"";position:absolute;left:0;top:12px;width:11px;height:2px;background:var(--molten);}
+
+/* Data table — the deck's workhorse */
+.tbl{width:100%;border-collapse:collapse;margin-top:34px;font-family:var(--f-body);}
+.tbl th{font-family:var(--f-mono);font-size:16px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--bone-d);text-align:left;padding:0 18px 14px;border-bottom:2px solid var(--steel);}
+.tbl td{font-size:23px;color:var(--bone-d);padding:15px 18px;border-bottom:1px solid var(--steel);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl td.name{color:var(--bone);font-weight:500;}
+.tbl td.mono{font-family:var(--f-mono);}
+.tbl td.score{font-family:var(--f-mono);font-size:27px;font-weight:600;color:var(--bone);text-align:right;white-space:nowrap;}
+.tbl td.score.hot{color:var(--molten);}
+.tbl td.score.dead{color:var(--steel-2);font-size:22px;}
+.tbl td.rank{font-family:var(--f-display);font-size:32px;color:var(--steel-2);width:70px;}
+
+/* Rank-bar ladder — the signature graphic device */
+.lrow{display:grid;grid-template-columns:58px 1fr 128px;align-items:center;gap:20px;margin-bottom:24px;}
+.lrow .n{font-family:var(--f-display);font-size:38px;color:var(--steel-2);line-height:1;}
+.lrow .b{height:44px;background:var(--steel);position:relative;overflow:hidden;}
+.lrow .b i{position:absolute;inset:0 auto 0 0;background:var(--molten);width:0;transition:width 1.1s var(--ease);}
+.slide.visible .lrow .b i{width:var(--w);}
+.lrow .b span{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2;
+  font-family:var(--f-body);font-weight:600;font-size:21px;color:var(--ink);letter-spacing:.01em;}
+.lrow.faint .b i{background:var(--steel-2);}
+.lrow.faint .b span{color:var(--bone);}
+.lrow .s{font-family:var(--f-mono);font-size:28px;font-weight:600;color:var(--bone);text-align:right;}
+.lrow.faint .s{color:var(--bone-d);}
+
+/* Code / pseudocode block */
+.code{background:var(--ink-3);border-left:4px solid var(--molten);padding:26px 30px;
+  font-family:var(--f-mono);font-size:21px;line-height:1.62;color:var(--bone-d);white-space:pre;overflow:hidden;}
+.code .k{color:var(--molten);}
+.code .c{color:var(--steel-2);}
+.code .v{color:var(--bone);}
+
+/* Big stat */
+.stat{display:flex;align-items:baseline;gap:16px;}
+.stat .v{font-family:var(--f-display);font-size:104px;line-height:.9;color:var(--bone);}
+.stat .v.hot{color:var(--molten);}
+.stat .u{font-family:var(--f-mono);font-size:21px;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-d);}
+.statlabel{font-family:var(--f-body);font-size:22px;line-height:1.4;color:var(--bone-d);margin-top:14px;}
+
+/* Callout strip */
+.callout{margin-top:36px;border:2px solid var(--molten);background:rgba(255,77,24,.07);padding:26px 32px;
+  font-family:var(--f-body);font-size:26px;line-height:1.45;color:var(--bone);}
+.callout .k{font-family:var(--f-mono);font-size:16px;letter-spacing:.22em;text-transform:uppercase;color:var(--molten);display:block;margin-bottom:12px;}
+.note{font-family:var(--f-mono);font-size:16px;line-height:1.55;letter-spacing:.04em;color:var(--steel-2);margin-top:22px;}
+
+/* Verdict pills */
+.pill{display:inline-block;font-family:var(--f-mono);font-size:15px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;padding:5px 12px;}
+.pill.win{background:var(--molten);color:var(--ink);}
+.pill.dead{background:var(--steel);color:var(--bone-d);}
+
+/* ===========================================
+   REVEAL ANIMATION — staggered on slide entry
+   =========================================== */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);}
+.slide.visible .reveal{opacity:1;transform:none;}
+.slide.visible .reveal:nth-child(1){transition-delay:.05s}
+.slide.visible .reveal:nth-child(2){transition-delay:.14s}
+.slide.visible .reveal:nth-child(3){transition-delay:.23s}
+.slide.visible .reveal:nth-child(4){transition-delay:.32s}
+.slide.visible .reveal:nth-child(5){transition-delay:.41s}
+.slide.visible .reveal:nth-child(6){transition-delay:.50s}
+
+/* Title slide pixel-stack decoration */
+.stack{position:absolute;right:88px;bottom:120px;width:300px;height:220px;z-index:2;}
+.stack i{position:absolute;background:var(--molten);display:block;bottom:0;}
+
+
+/* ===========================================
+   .tight — density modifier for the four
+   heaviest slides (03, 04, 06, 07). Keeps them
+   inside the 1080px stage without shrinking type
+   below comfortable reading size.
+   =========================================== */
+.tight h2{font-size:64px;}
+.tight .lede{font-size:25px;margin-top:16px;}
+.tight .tbl{margin-top:26px;}
+.tight .tbl th{padding-bottom:10px;font-size:15px;}
+.tight .tbl td{padding:6px 18px;font-size:21px;}
+.tight .tbl td.score{font-size:24px;}
+.tight .tbl td.rank{font-size:28px;}
+.tight .cols2,.tight .cols3,.tight .cols-73{margin-top:30px;gap:34px;}
+.tight .card{padding:24px 26px;}
+.tight .card h3{margin-bottom:14px;font-size:16px;}
+.tight .card p,.tight .card li{font-size:22px;line-height:1.45;}
+.tight .card li{margin-bottom:10px;}
+.tight .code{font-size:19px;line-height:1.5;padding:22px 26px;}
+.tight .callout{margin-top:26px;padding:22px 28px;font-size:24px;}
+.tight .note{margin-top:16px;}
+.tight .stat .v{font-size:84px;}
+/* .tighter — slide 07 only: code block + three stacked cards. */
+.tighter .card{padding:20px 24px;margin-bottom:16px!important;}
+.tighter .card:last-child{margin-bottom:0!important;}
+.tighter .card p,.tighter .card li{font-size:21px;}
+.tighter .code{line-height:1.44;}
+.tighter .callout{margin-top:22px;}
+/* .densetable — slide 05 carries 11 rows; shave the row box, not the type. */
+.densetable .tbl td{padding:4px 18px;}
+.densetable .lede{display:none;}
+/* slide 08 sits ~10px proud of the footer; reclaim it from the lede gap. */
+.tighter .lede{margin-top:12px;}
+
+/* ===========================================
+   INLINE EDITING CHROME (outside the stage)
+   =========================================== */
+.edit-hotzone{position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000;cursor:pointer;}
+.edit-toggle{position:fixed;top:18px;left:18px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .3s ease;
+  background:var(--molten);color:var(--ink);border:none;font-size:20px;width:46px;height:46px;cursor:pointer;}
+.edit-toggle.show,.edit-toggle.active{opacity:1;pointer-events:auto;}
+.edit-toggle.active{background:var(--bone);}
+body.editing [contenteditable="true"]{outline:1px dashed var(--molten);outline-offset:4px;}
+.edit-hint{position:fixed;bottom:18px;left:18px;z-index:10001;font-family:var(--f-mono);font-size:13px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--molten);display:none;}
+body.editing .edit-hint{display:block;}
+</style>
+</head>
+<body>
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">&#9998;</button>
+<div class="edit-hint">Edit mode — click any text · Ctrl+S saves a copy · E to exit</div>
+
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+<!-- ============ 01 · TITLE ============ -->
+<section class="slide active visible">
+  <div class="hdr"><span>PTCG AI Battle &middot; Simulation Track</span><span class="tag">Final Standings</span><span>01 / 15</span></div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 760px;gap:60px;">
+      <div>
+        <div class="eyebrow reveal">6,808 teams &middot; Entries closed 2026-08-16</div>
+        <h1 class="reveal">What<br>actually<br><span class="o">won</span></h1>
+        <div class="reveal" style="margin-top:44px;border-left:4px solid var(--molten);padding-left:30px;
+             font-family:var(--f-body);font-size:28px;line-height:1.5;color:var(--bone-d);max-width:800px;">
+          Every method the field tried, matched to the score it actually earned &mdash; read against the finished leaderboard, not the July snapshot.
+        </div>
+      </div>
+      <div>
+        <div class="reveal" style="font-family:var(--f-mono);font-size:16px;letter-spacing:.22em;text-transform:uppercase;color:var(--bone-d);border-bottom:2px solid var(--steel);padding-bottom:14px;margin-bottom:26px;">Final leaderboard &mdash; where the mass sits</div>
+        <div class="lrow reveal"><span class="n">&#9650;</span><span class="b"><i style="--w:100%"></i><span>Best score on the board (Luca)</span></span><span class="s">1330</span></div>
+        <div class="lrow reveal"><span class="n">28</span><span class="b"><i style="--w:83%"></i><span>Teams above 1100</span></span><span class="s">1100+</span></div>
+        <div class="lrow reveal"><span class="n">361</span><span class="b"><i style="--w:68%"></i><span>Teams above 900</span></span><span class="s">900+</span></div>
+        <div class="lrow reveal faint"><span class="n">50%</span><span class="b"><i style="--w:46%"></i><span>Median team</span></span><span class="s">612.6</span></div>
+        <div class="lrow reveal faint"><span class="n">3510</span><span class="b"><i style="--w:45%"></i><span>Us &mdash; team cha7ura</span></span><span class="s">604.8</span></div>
+        <div class="note reveal">Public leaderboard pulled 2026-08-23. Zero submissions exist after 2026-08-16 23:59 &mdash; the board is settled.</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">cha7ura &middot; 2026-08-23 &middot; internal review</div>
+</section>
+
+<!-- ============ 02 · MECHANICS ============ -->
+<section class="slide">
+  <div class="hdr"><span>Mechanics</span><span class="tag">Ground Rules</span><span>02 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">02</span>You never generate a move</h2>
+    <p class="lede reveal">Unlike a normal Kaggle competition there is no <span style="font-family:var(--f-mono)">submission.csv</span>. You ship an agent bundle, and the engine hands your agent a menu.</p>
+    <div class="cols2 reveal">
+      <div class="card">
+        <h3>What a submission is</h3>
+        <ul>
+          <li><b>deck.csv</b> &mdash; 60 card IDs, one per line</li>
+          <li><b>main.py</b> &mdash; exposes <span style="font-family:var(--f-mono)">agent(obs) &rarr; [indices]</span></li>
+          <li><b>cg/</b> &mdash; the official engine, copied in from the competition input</li>
+          <li>All three packed into <b>submission.tar.gz</b></li>
+        </ul>
+        <p style="margin-top:18px">So <b>both the deck and the policy ship together</b>. That single fact drives every result in this deck.</p>
+      </div>
+      <div class="card">
+        <h3>What a decision is</h3>
+        <p>Every step the engine enumerates the <b>legal options</b> &mdash; ATTACH, PLAY, EVOLVE, ABILITY, RETREAT, ATTACK, END, plus sub-selections with <span style="font-family:var(--f-mono)">minCount</span>/<span style="font-family:var(--f-mono)">maxCount</span>.</p>
+        <p>Your agent returns <b>an index into that menu</b>. A turn is a sequence of picks ending in END, so you play several cards per turn.</p>
+        <p>The policy is <b>pure menu-selection</b>. It never invents an action; it only chooses among the ones already offered.</p>
+      </div>
+    </div>
+    <div class="callout reveal"><span class="k">Why this matters</span>The engine already sorts the menu sensibly. That gives you a brutally strong trivial baseline &mdash; "always pick option 0" &mdash; which most learned policies never beat. Hold that thought until slide 12.</div>
+  </div>
+  <div class="foot">What actually won &middot; 02</div>
+</section>
+
+<!-- ============ 03 · FINAL LEADERBOARD ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>The Scoreboard</span><span class="tag">Final Top 10</span><span>03 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">03</span>The board, as it finished</h2>
+    <div class="cols-73">
+      <div class="reveal">
+        <table class="tbl" style="margin-top:14px">
+          <thead><tr><th style="width:56px">#</th><th>Team</th><th style="width:150px">Subs</th><th style="text-align:right;width:150px">Score</th></tr></thead>
+          <tbody>
+            <tr><td class="rank">01</td><td class="name">Luca</td><td class="mono">2</td><td class="score hot">1330.3</td></tr>
+            <tr><td class="rank">02</td><td class="name">flg</td><td class="mono">2</td><td class="score">1295.4</td></tr>
+            <tr><td class="rank">03</td><td class="name">Unown Gradiant</td><td class="mono">2</td><td class="score">1287.3</td></tr>
+            <tr><td class="rank">04</td><td class="name">KawattaTaido</td><td class="mono">2</td><td class="score">1261.9</td></tr>
+            <tr><td class="rank">05</td><td class="name">LumenLiquidity</td><td class="mono">2</td><td class="score">1250.4</td></tr>
+            <tr><td class="rank">06</td><td class="name">LiamK</td><td class="mono">2</td><td class="score">1241.0</td></tr>
+            <tr><td class="rank">07</td><td class="name">Petit Canard</td><td class="mono">2</td><td class="score">1240.5</td></tr>
+            <tr><td class="rank">08</td><td class="name">palsystem</td><td class="mono">2</td><td class="score">1226.3</td></tr>
+            <tr><td class="rank">09</td><td class="name">&#12420;&#12427;&#27671;&#20803;&#27671;&#12511;&#12527;&#12495;&#12523;&#12461;</td><td class="mono">2</td><td class="score">1217.1</td></tr>
+            <tr><td class="rank">10</td><td class="name">&#1040;zat &#1040;khtyam&#1086;v</td><td class="mono">2</td><td class="score">1214.8</td></tr>
+            <tr><td class="rank" style="color:var(--molten)">3510</td><td class="name" style="color:var(--molten)">cha7ura &mdash; us</td><td class="mono">2</td><td class="score hot">604.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card reveal" style="margin-bottom:22px">
+          <h3>Correction to the July read</h3>
+          <p>Our earlier analysis listed "The Debauchery Tea Party" as us at #1. It is <b>not our team</b> &mdash; members hirotosasaoka, satoshihaimura, sizumita. It finished <b>338th at 905.3</b>.</p>
+          <p style="margin-top:12px">Our actual team is <b>cha7ura</b>, solo, <b>3510 / 6808</b>.</p>
+        </div>
+        <div class="card reveal" style="margin-bottom:22px">
+          <h3>Where the mass sits</h3>
+          <p>1300+: <b>1</b> &nbsp;&middot;&nbsp; 1200+: <b>10</b> &nbsp;&middot;&nbsp; 1100+: <b>28</b></p>
+          <p>1000+: <b>95</b> &nbsp;&middot;&nbsp; 900+: <b>361</b> &nbsp;&middot;&nbsp; 800+: <b>1,010</b></p>
+          <p style="margin-top:12px">Median <b>612.6</b>. New submissions start near 600, so half the field never moved.</p>
+        </div>
+        <div class="card hot reveal">
+          <h3>The board is settled</h3>
+          <p>Zero submissions after <b>2026-08-16 23:59</b>; 1,669 teams submitted on the final day. Every top team carries exactly 2 selected entries.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 03</div>
+</section>
+
+<!-- ============ 04 · DECK META BY SCORE BAND ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>The Scoreboard</span><span class="tag">Deck &times; Score Band</span><span>04 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">04</span>Deck choice <i>is</i> the gradient</h2>
+    <p class="lede reveal">2,388 leaderboard decks recovered from public replays and classified by archetype. Usage is not flat across the ladder &mdash; it inverts almost completely from bottom to top.</p>
+    <table class="tbl reveal">
+      <thead><tr><th style="width:210px">Score band</th><th>Dominant archetypes (share of classified teams in band)</th><th style="width:120px;text-align:right">n</th></tr></thead>
+      <tbody>
+        <tr><td class="name" style="color:var(--molten)">1100+</td><td><b>Dragapult 29.6%</b> &middot; <b>Mega Kangaskhan 29.6%</b> &middot; Festival Lead 18.5% &middot; everything else 3.7% each</td><td class="score">27</td></tr>
+        <tr><td class="name">1000&ndash;1099</td><td>Dragapult 21.8% &middot; Alakazam 15.4% &middot; Festival Lead 15.4% &middot; Grimmsnarl 15.4% &middot; Mega Froslass 14.1%</td><td class="score">78</td></tr>
+        <tr><td class="name">900&ndash;999</td><td>Grimmsnarl 28.3% &middot; Alakazam 20.5% &middot; Crustle Wall 11.3% &middot; Mega Froslass 8.1%</td><td class="score">283</td></tr>
+        <tr><td class="name">800&ndash;899</td><td><b>Grimmsnarl 52.2%</b> &middot; Alakazam 14.8% &middot; Crustle Wall 6.4% &middot; Dragapult 5.8%</td><td class="score">500</td></tr>
+        <tr><td class="name">700&ndash;799</td><td>Grimmsnarl 32.8% &middot; Alakazam 23.2% &middot; Archaludon 13.4% &middot; Mega Lucario 9.2%</td><td class="score">500</td></tr>
+        <tr><td class="name">600&ndash;699</td><td>Mega Lucario 27.6% &middot; Alakazam 19.2% &middot; Archaludon 15.0% &middot; Dragapult 12.0%</td><td class="score">500</td></tr>
+        <tr><td class="name">500&ndash;599</td><td><b>Mega Lucario 36.6%</b> &middot; Alakazam 15.6% &middot; Crustle Wall 11.8% &middot; Hop Trevenant 2.6%</td><td class="score">500</td></tr>
+      </tbody>
+    </table>
+    <div class="cols3" style="margin-top:26px">
+      <div class="card hot reveal"><h3>Dragapult is not extinct</h3><p>Our July read called it "0.4% of the field, near-extinct" and we shipped away from it. It is now the <b>joint #1 elite deck</b> &mdash; 29.6% of everything above 1100.</p></div>
+      <div class="card reveal"><h3>Mega Lucario is the tutorial trap</h3><p><b>36.6%</b> of the 500&ndash;599 band, <b>3.7%</b> of 1100+. It is what the public sample notebooks hand you, and it is where unimproved entries stall.</p></div>
+      <div class="card reveal"><h3>Grimmsnarl peaks mid</h3><p>Most-used deck overall (24.1%), and <b>52.2%</b> of the 800&ndash;899 band &mdash; but <b>0%</b> above 1100. A strong deck with a ceiling.</p></div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 04</div>
+</section>
+
+<!-- ============ 05 · NOTEBOOK → LB ============ -->
+<section class="slide tight densetable">
+  <div class="hdr"><span>The Scoreboard</span><span class="tag">Notebook &rarr; LB</span><span>05 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">05</span>Every public notebook, scored</h2>
+    <table class="tbl reveal">
+      <thead><tr><th style="width:62px"></th><th>Notebook</th><th>Method family</th><th style="width:235px">Verdict</th><th style="width:170px;text-align:right">Reported LB</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">01</td><td class="name">rule-based-not-psychic-alakazam (best 5th)</td><td>800+ line deck-specific pilot</td><td><span class="pill win">Peaked top 10</span></td><td class="score hot">1137.5</td></tr>
+        <tr><td class="rank">02</td><td class="name">pokemon-tcg-ai-battle-1084-5-baseline</td><td>Rule-based scoring + Crustle guard</td><td><span class="pill win">Top public</span></td><td class="score hot">1084.5</td></tr>
+        <tr><td class="rank">03</td><td class="name">strong-start-baseline-agent-v10</td><td>Heuristic + hidden-card belief sampling</td><td><span class="pill win">Most-voted agent</span></td><td class="score">950+</td></tr>
+        <tr><td class="rank">04</td><td class="name">strong-start-crustle-lucario v7 / v9</td><td>Rule-based + meta patch + crash safety</td><td>Noise, not gain</td><td class="score">960 / 950</td></tr>
+        <tr><td class="rank">05</td><td class="name">ptcg-915-lucario-v3-anti-crustle-search</td><td>Heuristic + optional forward search</td><td>Search = tiebreak</td><td class="score">915</td></tr>
+        <tr><td class="rank">06</td><td class="name">multiply-agent-best-900-lb</td><td>MultiPly beam search over engine API</td><td>Search = policy</td><td class="score">900</td></tr>
+        <tr><td class="rank">07</td><td class="name">improved-probabilistic-agent</td><td>Probabilistic expectimax over simulated actions</td><td>Sibling of the beam agent</td><td class="score dead">unstated</td></tr>
+        <tr><td class="rank">08</td><td class="name">visible-grim-belief-alakazam-v21</td><td>Belief sampling + archetype matching</td><td>Author reports volatility</td><td class="score">798.3</td></tr>
+        <tr><td class="rank">09</td><td class="name">iwapalace-resource-balance-1000-fixed</td><td>Heuristic + sanitized tabular Q overlay</td><td>Only shipped ML</td><td class="score">812.2</td></tr>
+        <tr><td class="rank">10</td><td class="name">optimization-of-deck-and-agent-by-GA</td><td>Genetic algorithm over deck counts + weights</td><td>Method write-up only</td><td class="score dead">&mdash;</td></tr>
+        <tr><td class="rank">11</td><td class="name">reinforcement-learning-and-mcts-sample / muzero</td><td>Transformer + MCTS &middot; MuZero attempt</td><td><span class="pill dead">Unshipped</span></td><td class="score dead">&mdash;</td></tr>
+      </tbody>
+    </table>
+    <div class="note reveal">Authors' own reported public LB. Rows 10&ndash;11 published no score &mdash; the MuZero notebook is a 220-character stub. Votes 2026-08-23: RL+MCTS sample 1,044 &middot; v10 belief 213 &middot; probabilistic 202.</div>
+  </div>
+  <div class="foot">What actually won &middot; 05</div>
+</section>
+
+<!-- ============ 06 · FAMILY 1 — RULE-BASED SCORING ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Method Family 01</span><span class="tag">Rule-Based Scoring</span><span>06 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">06</span>Score every option, take the max</h2>
+    <p class="lede reveal">The shared ancestor of the whole leaderboard. Both official samples describe the identical four-step loop, and every high scorer is a mutation of it.</p>
+    <div class="cols-73">
+      <div class="reveal">
+        <div class="code">1. <span class="v">obs_dict</span>            <span class="c"># receive board state</span>
+2. <span class="v">select.option</span>       <span class="c"># list the legal actions</span>
+3. <span class="k">score</span>(each option)  <span class="c"># hand-written card logic</span>
+4. <span class="k">return</span> argmax       <span class="c"># pick one index</span>
+
+<span class="c"># Everything the scorer needs is visible:</span>
+<span class="c">#   opponent active HP + attached energy</span>
+<span class="c">#   both discard piles, all zone counts</span>
+<span class="c">#   your full hand, prizes remaining</span></div>
+        <div class="callout" style="margin-top:32px"><span class="k">Why it beats learning here</span>The heuristic <b>computes</b> damage, KO reach and prize race from a fully visible board. It never has to recall or recognise a state &mdash; which is exactly what a 60-card hidden-information game makes impossible.</div>
+      </div>
+      <div>
+        <div class="card reveal" style="margin-bottom:24px">
+          <h3>What the good ones encode</h3>
+          <ul>
+            <li>Named card constants, not generic types &mdash; 17 IDs in the Lucario pilot</li>
+            <li>Real ability math: <b>Powerful Hand = 20 &times; hand size</b></li>
+            <li>Explicit KO / prize-count arithmetic per candidate attack</li>
+            <li>Opening-turn scripts (bench Abra + Dunsparce first, then two more Abra)</li>
+          </ul>
+        </div>
+        <div class="card dim reveal">
+          <h3>Cost of entry</h3>
+          <p>These notebooks run <b>20,000&ndash;78,000 characters</b>. The Alakazam and Lucario pilots are 700&ndash;800+ lines of card-specific logic. This is the real price of a top-ten score.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 06</div>
+</section>
+
+<!-- ============ 07 · FAMILY 2 — META PATCHING ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Method Family 02</span><span class="tag">Meta Patching</span><span>07 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">07</span>The Crustle wall &mdash; and the patch</h2>
+    <p class="lede reveal">The highest-leverage public move of the early meta: noticing that one day-one deck hard-counters the entire ex-attacker field, and routing around it.</p>
+    <div class="cols3">
+      <div class="card reveal">
+        <h3>The problem</h3>
+        <p>Crustle (card <b>345</b>) has <i>Mysterious Rock Inn</i>: <b>zero damage from Pok&eacute;mon ex</b>.</p>
+        <p>Mega Lucario ex is a mega-ex. A naive agent swings 270 damage into Crustle for <b>0</b>, turn after turn, and throws a winnable matchup on autopilot.</p>
+      </div>
+      <div class="card hot reveal">
+        <h3>The patch</h3>
+        <p>The counter was already in the deck. <b>Hariyama (674)</b> is a non-ex 210-damage attacker.</p>
+        <p>Detect Crustle &rarr; stop feeding ex attacks into it &rarr; route energy and search toward the Makuhita&rarr;Hariyama line, backed by <b>Makuhita/Hariyama 2&rarr;3, Switch 2&rarr;3, Pok&eacute; Pad &times;4</b>.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Deck math, not vibes</h3>
+        <p>Basics <b>10&rarr;12</b> (Riolu 3&rarr;4, Solrock 2&rarr;3) drops the mulligan rate <b>25.9% &rarr; 19.1%</b>.</p>
+        <p>The list stays inside the Lucario shell on purpose: the policy is hardcoded to these cards, so a foreign netdeck would be piloted badly.</p>
+      </div>
+    </div>
+    <div class="cols2" style="margin-top:30px">
+      <div class="card reveal" style="display:flex;align-items:center;gap:44px">
+        <div><div class="stat"><span class="v">~10%</span><span class="u">&rarr;</span><span class="v hot">~70%</span></div>
+        <div class="statlabel">Crustle matchup win rate with the routing fix on, measured in-notebook.</div></div>
+      </div>
+      <div class="card reveal">
+        <h3>How the wall aged</h3>
+        <p>Crustle Wall ended at <b>7.75%</b> of all classified decks &mdash; but only <b>3.7%</b> of the 1100+ band and <b>11.8%</b> down in 500&ndash;599. The counter-play propagated; the wall sank. Its lasting legacy is the crash-safety wrapper these notebooks popularised: every decision wrapped, legal <span style="font-family:var(--f-mono)">minCount</span> fallback, because validation plays you against a copy of yourself and <b>a crash is a lost submission</b>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 07</div>
+</section>
+
+<!-- ============ 08 · FAMILY 3 — FORWARD SEARCH ============ -->
+<section class="slide tight tighter">
+  <div class="hdr"><span>Method Family 03</span><span class="tag">Forward Search</span><span>08 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">08</span>Search, bolted onto the heuristic</h2>
+    <p class="lede reveal">The engine exposes <span style="font-family:var(--f-mono)">search_begin</span> / <span style="font-family:var(--f-mono)">search_step</span> &mdash; you can genuinely simulate forward. Three notebooks used it, and all three kept the heuristic in charge.</p>
+    <div class="cols-73">
+      <div class="reveal">
+        <div class="code"><span class="k">BEAM_WIDTH</span> = <span class="v">3</span>            <span class="c"># candidates kept per ply</span>
+depth      = <span class="v">4</span>            <span class="c"># plies, plus a time budget</span>
+
+<span class="c"># candidates come FROM the heuristic, not from scratch</span>
+base_order = AdvancedPolicy(obs).choose()
+<span class="k">for</span> first <span class="k">in</span> base_order[:MAX_CANDIDATES]:
+    st = search_step(sid, [first])
+    beam.append((<span class="k">evaluate_state</span>(st), ...))
+
+<span class="c"># evaluate_state: hand-weighted, not learned</span>
+prize_diff        * <span class="v">10000</span>
+energies attached * <span class="v">200</span>
+Mega Lucario ex   + <span class="v">500</span>   Hariyama + <span class="v">300</span>
+own active HP     * <span class="v">2.0</span>
+opp active HP     * <span class="v">-2.5</span>
+deck &lt; 5 cards    - <span class="v">5000</span>   <span class="c"># deck-out guard</span></div>
+      </div>
+      <div>
+        <div class="card reveal">
+          <h3>The structure that scored</h3>
+          <ul>
+            <li><b>Layer 1</b> heuristic scores the legal options</li>
+            <li><b>Layer 2</b> search evaluates a small candidate set, if the API is available, within a per-decision time budget</li>
+            <li><b>Layer 3</b> legal fallback on any surprise</li>
+          </ul>
+        </div>
+        <div class="card reveal">
+          <h3>Two variants shipped</h3>
+          <p><b>03 MultiPly Beam Search</b> keeps a width-3 beam. <b>04 Probabilistic Expectimax</b> adds <span style="font-family:var(--f-mono)">simulate_action</span> and averages over chance outcomes instead of taking the max. Same skeleton, same hand-weighted leaf value.</p>
+        </div>
+        <div class="card dim reveal">
+          <h3>Result</h3>
+          <p><b>900</b> and <b>915</b> &mdash; solid, but below the <b>1084.5</b> pure rule-based baseline. Rollouts inside the search are the same heuristic, capped at 20 steps. Search re-ranks the shortlist; it never replaces it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 08</div>
+</section>
+
+<!-- ============ 09 · FAMILY 4 — BELIEF STATE ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Method Family 04</span><span class="tag">Belief State</span><span>09 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">09</span>Modelling what you cannot see</h2>
+    <p class="lede reveal">The one genuinely new idea of the late meta, and the most-voted agent notebook of the whole competition. It attacks the hidden-information problem head-on instead of ignoring it.</p>
+    <div class="cols-73">
+      <div class="reveal">
+        <div class="code"><span class="k">def</span> <span class="v">_op_visible</span>(state, op_i):   <span class="c"># what they've revealed</span>
+<span class="k">def</span> <span class="v">_match_archetype</span>(op_seen): <span class="c"># which known deck is it?</span>
+<span class="k">def</span> <span class="v">_sample_hidden</span>(state, me_i):<span class="c"># fill unseen zones</span>
+<span class="k">def</span> <span class="v">_leaf_eval</span>(state, me_i):    <span class="c"># score the completion</span>
+<span class="k">def</span> <span class="v">_greedy_pick</span>(obs)           <span class="c"># act on the belief</span></div>
+        <div class="callout" style="margin-top:28px"><span class="k">The honest constraint</span>The archetype template is <b>static public reference data</b> and is only consulted once the opponent reveals a matching line. It never inspects hidden opponent zones or replay identities &mdash; the belief is inferred, not peeked.</div>
+      </div>
+      <div>
+        <div class="card hot reveal" style="margin-bottom:22px">
+          <h3>Why it matters to us</h3>
+          <p>Our July conclusion was that beating the heuristic would need "a fundamentally different belief-state approach, not a static classifier &mdash; a research project."</p>
+          <p style="margin-top:12px">Someone shipped exactly that. <b>213 votes</b>, title claim LB 950+.</p>
+        </div>
+        <div class="card reveal">
+          <h3>But read the scores honestly</h3>
+          <p>The v21 Alakazam variant self-reports its exact score row at <b>798.3</b>, with a campaign high-water of <b>844.4</b>, and explicitly labels the earlier higher reads as <b>volatility, not a stable claim</b>.</p>
+          <p style="margin-top:12px">Belief sampling is the best new idea in the field. It is not a demonstrated jump to 1300.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 09</div>
+</section>
+
+<!-- ============ 10 · FAMILY 5 — LEARNED + OPTIMISED ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Method Family 05</span><span class="tag">Learned &amp; Optimised</span><span>10 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">10</span>Where learning actually appears</h2>
+    <p class="lede reveal">Across 6,808 teams and every public notebook, exactly one shipped agent contains a learned artefact &mdash; and it sits on top of a heuristic, not in place of one.</p>
+    <div class="cols3">
+      <div class="card hot reveal">
+        <h3>Tabular Q overlay &mdash; 812.2</h3>
+        <p>The Iwapalace package: a self-contained heuristic plus a sanitised <b>Q-value overlay</b> in <span style="font-family:var(--f-mono)">q_model_submit.json</span>.</p>
+        <p style="margin-top:12px">The real work is still hand-written resource guards: don't Hero's Cape anything but Iwapalace, don't over-attach Dark Energy, stop searching on a completed board.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Genetic algorithm on both halves</h3>
+        <p>Deck counts <i>and</i> agent scoring weights are scalars, so a GA can optimise them jointly &mdash; each card given <span style="font-family:var(--f-mono)">[id, init, min, max]</span> bounds.</p>
+        <p style="margin-top:12px">Published as a method write-up with no leaderboard claim. Matches our own GA result: <b>+0.057 offline &rarr; &minus;86 live</b>.</p>
+      </div>
+      <div class="card dim reveal">
+        <h3>Deep RL: attempted, never shipped</h3>
+        <p>The official transformer + MCTS sample is the most-voted notebook in the competition (<b>1,044 votes</b>) and taught everyone the Search API.</p>
+        <p style="margin-top:12px">A MuZero notebook appeared on 2026-08-20 as a <b>220-character stub</b>. No published top entry runs deep RL.</p>
+      </div>
+    </div>
+    <div class="callout reveal"><span class="k">Pattern</span>Learning survives only as an <b>overlay or an offline optimiser</b> on a working heuristic. Across the entire finished leaderboard, nobody shipped a learned policy as the decision-maker.</div>
+  </div>
+  <div class="foot">What actually won &middot; 10</div>
+</section>
+
+<!-- ============ 11 · THE MATCHED PILOT ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Method Family 06</span><span class="tag">The Matched Pilot</span><span>11 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">11</span>The deck-specific pilot</h2>
+    <p class="lede reveal">The single highest-scoring pattern in the whole survey: a several-hundred-line policy that <b>models one specific deck</b>, card by card.</p>
+    <div class="cols3">
+      <div class="card hot reveal">
+        <h3>Alakazam &mdash; peaked 5th</h3>
+        <p>Rule-based, no psychic power. Explicit opening script, named card constants, ability math wired in.</p>
+        <div class="stat" style="margin-top:18px"><span class="v hot">1137</span><span class="u">peak LB</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Our alakazam_top</h3>
+        <p><b>814-line</b> pilot modelling the deck: Powerful Hand = 20 &times; hand size, real damage / KO / prize math.</p>
+        <div class="stat" style="margin-top:18px"><span class="v">839.6</span><span class="u">best live row</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Our agent_lb950</h3>
+        <p><b>731-line</b> Lucario-specific pilot &mdash; Makuhita, Hariyama, Lunatone, Solrock, Riolu, Mega Lucario ex, 17 card constants.</p>
+        <div class="stat" style="margin-top:18px"><span class="v">80%</span><span class="u">vs generic</span></div>
+      </div>
+    </div>
+    <div class="callout reveal"><span class="k">Controlled test</span>agent_lb950 vs the generic pilot, <b>same deck on both seats</b>, 100 games on the real engine: <b>80&ndash;20</b>, seat-balanced (43/50 and 37/50), zero errors. Same deck. Same engine. The only variable was whether the pilot knew the cards.</div>
+    <div class="note reveal">Corollary, and the reason we stalled: a new deck is not a swap, it's a build. Adopting Dragapult or Mega Kangaskhan &mdash; the two decks that own the 1100+ band &mdash; means writing a fresh ~800-line pilot for each.</div>
+  </div>
+  <div class="foot">What actually won &middot; 11</div>
+</section>
+
+<!-- ============ 12 · OUR NEGATIVE RESULTS ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Our Experiments</span><span class="tag">Negative Results</span><span>12 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">12</span>Seven things we proved don't work</h2>
+    <p class="lede reveal">All numbers below are held-out or live &mdash; no training-set scores, no cherry-picked runs.</p>
+    <table class="tbl reveal">
+      <thead><tr><th>Lever</th><th>How it was measured</th><th style="width:300px;text-align:right">Result</th><th style="width:150px">Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="name">ISMCTS search</td><td>Head-to-head vs the heuristic pilot</td><td class="score dead">11&ndash;17% win rate</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">Value-net 1-ply search</td><td>Head-to-head vs the heuristic pilot</td><td class="score dead">19&ndash;26% win rate</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">Behavioural clone, base features (23+7)</td><td>Top-1 accuracy vs an 82% expert</td><td class="score dead">46.9%</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">Behavioural clone, rich features (30+20)</td><td>Action semantics, resolved card, discard/prize/threat</td><td class="score dead">45.6%</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">Hash-map state&rarr;action policy</td><td>Held-out state coverage</td><td class="score dead">0.3%</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">Hand-written Grimmsnarl pilot</td><td>200-game gate vs the generic pilot</td><td class="score dead">44.1%</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name">GA-evolved Trevenant deck (trev_ga1)</td><td>Offline gain vs live ladder result</td><td class="score dead">+0.057 &rarr; &minus;86</td><td><span class="pill dead">Dead</span></td></tr>
+        <tr><td class="name" style="color:var(--molten)">&#9656; &nbsp;"always pick option 0"</td><td style="color:var(--bone)">The trivial baseline every clone had to beat</td><td class="score hot">50.8%</td><td><span class="pill win">Undefeated</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note reveal">Deck selection with a matched pilot was the only lever that produced live gains &mdash; and it topped out at 839.6, in a field whose 1100+ band we never reached.</div>
+  </div>
+  <div class="foot">What actually won &middot; 12</div>
+</section>
+
+<!-- ============ 13 · WHY LEARNING LOST ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Diagnosis</span><span class="tag">Why Learning Lost</span><span>13 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">13</span>The 50.8% wall</h2>
+    <div class="cols-73">
+      <div class="reveal">
+        <div class="card hot" style="margin-bottom:24px">
+          <h3>The baseline nobody could beat</h3>
+          <p>The engine already orders the option menu sensibly. Option 0 is the obvious play <b>50.8%</b> of the time. Every classifier we trained &mdash; base features, rich features, more data &mdash; landed <b>below</b> that.</p>
+        </div>
+        <div class="card">
+          <h3>Where the expert's edge actually lives</h3>
+          <p>In the remaining <b>~49% of deviations</b>. Those depend on the hidden hand, an opponent read, and multi-turn planning. None of it is recoverable from a static, per-decision feature vector.</p>
+          <p style="margin-top:12px">The field's answer was not a better classifier &mdash; it was <b>belief sampling</b> (slide 9): infer the hidden zones, then apply the same heuristic to the completed state.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card reveal" style="margin-bottom:22px">
+          <h3>Compute, don't recognise</h3>
+          <p>The heuristic wins because everything it needs is <b>visible and computable</b>: opponent active HP and energy, both discard piles, every zone count.</p>
+          <p style="margin-top:12px">It never needs to recall a similar state &mdash; which matters, because the hash-map policy showed held-out coverage of <b>0.3%</b>.</p>
+        </div>
+        <div class="card dim reveal">
+          <h3>The matched-deck gap</h3>
+          <p>Top pilots on a shared deck hit <b>74&ndash;82%</b>. Ours hit <b>38%</b>. The decision <i>mix</i> is nearly identical (MAIN 61% vs 56%, draw 23% vs 27%) &mdash; so the ~40-point gap is <b>choice quality inside the menu</b>, plus an inconsistent go-first policy (we're 5/3; experts commit ~100% one way).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; 13</div>
+</section>
+
+<!-- ============ 14 · NOISE ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Measurement</span><span class="tag">The Noise Floor</span><span>14 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">14</span>Every score here is one draw</h2>
+    <p class="lede reveal">The ladder rescores the <b>same unchanged file</b> across a huge range on every resubmit. Read every number in this survey through that lens &mdash; including ours.</p>
+    <div class="cols3">
+      <div class="card hot reveal">
+        <h3>Same artifact, three draws</h3>
+        <p>We resubmitted <span style="font-family:var(--f-mono)">submission_lb950_aug8.tar.gz</span> &mdash; byte-identical &mdash; three times in 24 hours:</p>
+        <p style="margin-top:12px"><b>660.4</b> &nbsp;&middot;&nbsp; <b>586.2</b> &nbsp;&middot;&nbsp; <b>604.8</b></p>
+        <p style="margin-top:12px">A 74-point spread from nothing but matchmaking.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Across the campaign</h3>
+        <p><b>alakazam_top</b> &nbsp;686.8 &rarr; 1005.5</p>
+        <p><b>dragapult_v19</b> &nbsp;699.0 &rarr; 909.9</p>
+        <p style="margin-top:12px">Identical bytes, 319- and 211-point spreads. Roughly <b>&plusmn;120 (1&sigma;)</b>.</p>
+      </div>
+      <div class="card reveal">
+        <h3>The public tell</h3>
+        <p>The Crustle-Lucario line published <b>v7 at 960</b> then <b>v9 at 950</b> &mdash; a strictly improved notebook reporting a lower score.</p>
+        <p style="margin-top:12px">The v21 belief author says it outright: earlier higher reads are <b>volatility, not a stable score claim</b>.</p>
+      </div>
+    </div>
+    <div class="callout reveal"><span class="k">Working rule</span>&plusmn;120 is wider than the entire final top-ten spread (1330 &rarr; 1215, 115 points). Sim results are hypotheses; only the live ladder confirms, and only over <b>days of resubmits</b>. Never pick an active submission by max-over-rows.</div>
+  </div>
+  <div class="foot">What actually won &middot; 14</div>
+</section>
+
+<!-- ============ 15 · THE PLAYBOOK ============ -->
+<section class="slide tight">
+  <div class="hdr"><span>Takeaways</span><span class="tag">The Playbook</span><span>15 / 15</span></div>
+  <div class="body">
+    <h2 class="reveal"><span class="num">15</span>What the finished board says to do</h2>
+    <div class="cols2" style="margin-top:26px">
+      <div>
+        <div class="card hot reveal" style="margin-bottom:20px">
+          <h3>01 &mdash; Deck choice sets the ceiling</h3>
+          <p>Mega Lucario is 36.6% of the bottom band and 3.7% of the top. Dragapult and Mega Kangaskhan are 59% of everything above 1100. Pick from the top band, then earn it with a matched pilot.</p>
+        </div>
+        <div class="card reveal" style="margin-bottom:20px">
+          <h3>02 &mdash; Budget for the pilot, not the swap</h3>
+          <p>~800 lines of card-specific logic per archetype. Our Grimmsnarl-on-a-generic-pilot experiment cost a live slot for <b>416.5</b>.</p>
+        </div>
+        <div class="card reveal">
+          <h3>03 &mdash; Crash-safety before cleverness</h3>
+          <p>Wrap every decision with a legal <span style="font-family:var(--f-mono)">minCount</span> fallback. Validation plays you against yourself; one exception is a lost submission.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card reveal" style="margin-bottom:20px">
+          <h3>04 &mdash; Belief sampling is the live frontier</h3>
+          <p>The one new idea that shipped and drew votes. Infer hidden zones from revealed cards, then let the heuristic act on the completed state. Search and clones both lost; this did not.</p>
+        </div>
+        <div class="card reveal" style="margin-bottom:20px">
+          <h3>05 &mdash; Learning only as an overlay</h3>
+          <p>A tabular Q file on a hand-written heuristic is the entire shipped ML footprint of a 6,808-team competition. Beat 50.8% offline before believing anything else.</p>
+        </div>
+        <div class="card dim reveal">
+          <h3>06 &mdash; Where this goes next</h3>
+          <p>This board closed 2026-08-16; we finished <b>3510 / 6808</b>. The successor &mdash; PTCG AI Battle Challenge <b>Strategy</b>, $240,000, 483 teams &mdash; runs to <b>2026-09-13</b>, and we are entered.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">What actually won &middot; cha7ura &middot; 2026-08-23</div>
+</section>
+
+</main>
+</div>
+<div class="pgbar" id="pgbar" style="width:6.67%"></div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Fixed 1920x1080 stage, scaled to the window.
+   =========================================== */
+class SlidePresentation {
+  constructor(){
+    this.slides = document.querySelectorAll('.slide');
+    this.stage  = document.getElementById('deckStage');
+    this.bar    = document.getElementById('pgbar');
+    this.current= 0;
+    this.setupStageScale();
+    this.setupKeyboardNav();
+    this.setupTouchNav();
+    this.setupWheelNav();
+    this.show(0);
+  }
+  /* Scale the whole stage with one transform — never reflow content. */
+  setupStageScale(){
+    const scale = () => {
+      const f = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+      const x = (window.innerWidth  - 1920*f)/2;
+      const y = (window.innerHeight - 1080*f)/2;
+      this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+    };
+    scale(); window.addEventListener('resize', scale);
+  }
+  setupKeyboardNav(){
+    document.addEventListener('keydown', e => {
+      if (e.target.getAttribute('contenteditable')) return;
+      if (['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){ e.preventDefault(); this.next(); }
+      if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); this.prev(); }
+      if (e.key === 'Home') this.show(0);
+      if (e.key === 'End')  this.show(this.slides.length-1);
+    });
+  }
+  setupTouchNav(){
+    let x0 = null;
+    document.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, {passive:true});
+    document.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 55) (dx < 0 ? this.next() : this.prev());
+      x0 = null;
+    }, {passive:true});
+  }
+  setupWheelNav(){
+    let lock = false;
+    document.addEventListener('wheel', e => {
+      if (lock || Math.abs(e.deltaY) < 24) return;
+      lock = true; setTimeout(()=>lock=false, 650);
+      (e.deltaY > 0 ? this.next() : this.prev());
+    }, {passive:true});
+  }
+  next(){ this.show(this.current+1); }
+  prev(){ this.show(this.current-1); }
+  show(i){
+    this.current = Math.max(0, Math.min(i, this.slides.length-1));
+    this.slides.forEach((s,n) => {
+      s.classList.toggle('active',  n === this.current);
+      s.classList.toggle('visible', n === this.current);
+    });
+    this.bar.style.width = ((this.current+1)/this.slides.length*100) + '%';
+  }
+}
+const deck = new SlidePresentation();
+
+/* ===========================================
+   INLINE EDITING — hover top-left or press E
+   Ctrl+S downloads an edited copy.
+   =========================================== */
+const DECK_BUILD = '2026-08-23-final-lb';
+const editor = {
+  isActive:false,
+  targets(){ return document.querySelectorAll('h1,h2,h3,p,li,td,th,.lede,.eyebrow,.note,.callout,.statlabel,.u,.v,.s,.foot'); },
+  toggle(){
+    this.isActive = !this.isActive;
+    document.body.classList.toggle('editing', this.isActive);
+    document.getElementById('editToggle').classList.toggle('active', this.isActive);
+    this.targets().forEach(el => el.setAttribute('contenteditable', this.isActive));
+    if (!this.isActive) { localStorage.setItem('ptcg-methods-build', DECK_BUILD);
+      localStorage.setItem('ptcg-methods-deck', document.querySelector('.deck-stage').innerHTML); }
+  },
+  restore(){
+    // Only restore edits made against THIS build — otherwise a stale snapshot
+    // would silently overwrite a regenerated deck with old content.
+    if (localStorage.getItem('ptcg-methods-build') !== DECK_BUILD) {
+      localStorage.removeItem('ptcg-methods-deck'); return;
+    }
+    const saved = localStorage.getItem('ptcg-methods-deck');
+    if (saved) document.querySelector('.deck-stage').innerHTML = saved;
+  }
+};
+editor.restore();
+
+const hotzone = document.querySelector('.edit-hotzone');
+const editToggle = document.getElementById('editToggle');
+let hideTimeout = null;
+const showBtn = () => { clearTimeout(hideTimeout); editToggle.classList.add('show'); };
+const hideBtn = () => { hideTimeout = setTimeout(() => { if (!editor.isActive) editToggle.classList.remove('show'); }, 400); };
+hotzone.addEventListener('mouseenter', showBtn);
+hotzone.addEventListener('mouseleave', hideBtn);
+editToggle.addEventListener('mouseenter', showBtn);
+editToggle.addEventListener('mouseleave', hideBtn);
+hotzone.addEventListener('click', () => editor.toggle());
+editToggle.addEventListener('click', () => editor.toggle());
+document.addEventListener('keydown', e => {
+  if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) editor.toggle();
+  if ((e.ctrlKey || e.metaKey) && e.key === 's'){
+    e.preventDefault();
+    const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'methods-explainer.html'; a.click();
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+ "N_total": 59440,
+ "N_recent": 14860,
+ "arts": [
+  "Trevenant",
+  "MegaLucario",
+  "Alakazam",
+  "MegaStarmie",
+  "OTHER",
+  "Dragapult",
+  "Bellibolt",
+  "Crustle"
+ ],
+ "share_rec": {
+  "Trevenant": 23.506056527590847,
+  "MegaLucario": 23.374831763122476,
+  "Alakazam": 22.139973082099598,
+  "MegaStarmie": 12.513458950201883,
+  "OTHER": 8.462314939434725,
+  "Dragapult": 7.234185733512786,
+  "Bellibolt": 1.80349932705249,
+  "Crustle": 0.9656796769851952
+ },
+ "wr_rec": {
+  "Trevenant": 50.78728886344117,
+  "MegaLucario": 41.34158629624298,
+  "Alakazam": 51.29179331306991,
+  "MegaStarmie": 57.918795375100835,
+  "OTHER": 55.188866799204774,
+  "Dragapult": 55.58139534883721,
+  "Bellibolt": 36.19402985074627,
+  "Crustle": 40.76655052264808
+ },
+ "ewr": {
+  "Trevenant": 50.847200931159506,
+  "MegaLucario": 44.54598358238117,
+  "Alakazam": 50.71236371583496,
+  "MegaStarmie": 57.02994810751558,
+  "OTHER": 47.57575279733875,
+  "Dragapult": 55.74685675488931,
+  "Bellibolt": 44.60337152626004,
+  "Crustle": 42.23905449365383
+ },
+ "note": "via replay_field join; MegaStarmie bucket=84.7% Starmie/15.3% Cinderace",
+ "clean_split": {
+  "Mega Starmie ex": {
+   "games": 5030,
+   "wr": 56.2
+  },
+  "Cinderace": {
+   "games": 911,
+   "wr": 63.6
+  }
+ }
+}
