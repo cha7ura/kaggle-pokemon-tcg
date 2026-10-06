@@ -27,3 +27,10 @@ decisions_all.npz
 # tooling scratch
 .firecrawl/
 .pytest_cache/
+
+# playground comp: engine is licensed competition-use-only, never commit
+data/playground/
+# BC pipeline derived data
+data/bc_parquet/
+data/bc_tensors/
+tools/bc/runs/
