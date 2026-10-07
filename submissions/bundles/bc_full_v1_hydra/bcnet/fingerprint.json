@@ -1,0 +1,65 @@
+{
+ "encoder_fingerprint": "9d85fbc7c886a4fa",
+ "model": {
+  "dim": 192,
+  "layers": 6,
+  "heads": 4,
+  "ff": 768,
+  "dropout": 0.1
+ },
+ "filter": {
+  "deck_card": -1,
+  "winners_only": false,
+  "forced_kept": false,
+  "loss_weight": 0.3,
+  "min_avg_score": 0.0,
+  "recency_halflife": 0.0,
+  "newest_date": "2026-08-31"
+ },
+ "val": {
+  "rows": 95746,
+  "top1": 0.7143483800889855,
+  "main_rows": 54170,
+  "main_top1": 0.6615100609193281,
+  "single_top1": 0.7059728416649144,
+  "multi_top1_in_set": 0.8548357156116577,
+  "multi_rows": 5387,
+  "loss": 0.9329653975168863,
+  "value_loss": null,
+  "per_select_type": {
+   "MAIN": {
+    "rows": 54170,
+    "top1": 0.6615100609193281
+   },
+   "CARD": {
+    "rows": 37695,
+    "top1": 0.7699429632577265
+   },
+   "ATTACHED_CARD": {
+    "rows": 48,
+    "top1": 0.6041666666666666
+   },
+   "ENERGY": {
+    "rows": 781,
+    "top1": 0.645326504481434
+   },
+   "ATTACK": {
+    "rows": 184,
+    "top1": 0.967391304347826
+   },
+   "EVOLVE": {
+    "rows": 85,
+    "top1": 0.8941176470588236
+   },
+   "COUNT": {
+    "rows": 973,
+    "top1": 0.9886947584789312
+   },
+   "YES_NO": {
+    "rows": 1810,
+    "top1": 0.988950276243094
+   }
+  }
+ },
+ "epoch": 1
+}
