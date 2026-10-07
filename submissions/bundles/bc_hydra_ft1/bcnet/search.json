@@ -1,0 +1,19 @@
+{
+ "enabled": false,
+ "mode": "guard",
+ "margin": 1.0,
+ "candidates": 3,
+ "samples": 2,
+ "budget_fraction": 0.02,
+ "budget_cap": 2.0,
+ "reserve": 120.0,
+ "follow_forced": 8,
+ "worlds": 6,
+ "rollout_depth": 240,
+ "c_puct": 1.4,
+ "sims": 24,
+ "leaf_depth": 8,
+ "min_sims": 8,
+ "overrule_margin": 0.03,
+ "log": false
+}
